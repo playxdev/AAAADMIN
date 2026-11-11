@@ -4,6 +4,11 @@ export function escapeHtml(str: string): string {
   return div.innerHTML
 }
 
+// เวลาใน DB เป็น UTC แบบ "YYYY-MM-DD HH:MM:SS" -> เวลาเครื่อง
+export function fmtUtc(s: string | null): string {
+  return s ? new Date(s.replace(' ', 'T') + 'Z').toLocaleString() : '-'
+}
+
 export function getCurrentPath(): string {
   return window.location.hash.slice(1) || '/'
 }
@@ -11,13 +16,9 @@ export function getCurrentPath(): string {
 export function getPageTitle(path: string): string {
   const titles: Record<string, string> = {
     '/': 'Dashboard',
-    '/projects': 'Projects',
     '/houses': 'Houses',
-    '/users': 'Users',
-    '/vehicles': 'Vehicles',
-    '/devices': 'Devices',
-    '/access-logs': 'Access Logs',
-    '/blacklist': 'Blacklist',
+    '/users': 'Residents',
+    '/visitors': 'Visitors',
   }
   return titles[path] || 'AAA Admin'
 }

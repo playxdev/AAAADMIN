@@ -1,6 +1,8 @@
 import { getToken, logout } from './auth'
 
-const BASE = '/api/v1'
+// dev: ว่าง (vite proxy /api ไป wrangler dev), production: origin ของ AAA API ตั้งใน .env.production
+export const API_ORIGIN = import.meta.env.VITE_API_BASE ?? ''
+const BASE = `${API_ORIGIN}/api/v1/admin`
 
 class ApiError extends Error {
   status: number
@@ -29,8 +31,9 @@ async function request<T>(path: string, options: RequestInit = {}): Promise<T> {
   }
 
   if (!res.ok) {
+    // API ตอบ { error, field? } เช่น { error: "BAD_REQUEST", field: "house_code" }
     const err = await res.json().catch(() => ({ error: 'Request failed' }))
-    throw new ApiError(err.error || 'Request failed', res.status)
+    throw new ApiError(err.field ? `${err.error}: ${err.field}` : err.error || 'Request failed', res.status)
   }
 
   return res.json()
@@ -49,9 +52,9 @@ export const api = {
     })
   },
 
-  put<T>(path: string, body?: unknown): Promise<T> {
+  patch<T>(path: string, body?: unknown): Promise<T> {
     return request<T>(path, {
-      method: 'PUT',
+      method: 'PATCH',
       body: body ? JSON.stringify(body) : undefined,
     })
   },

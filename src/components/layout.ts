@@ -1,6 +1,6 @@
 import { renderSidebar, isSidebarCollapsed, setSidebarCollapsed } from './sidebar'
 import { renderHeader } from './header'
-import { renderFooter, initFooter } from './footer'
+import { renderFooter } from './footer'
 import { toggleThemeWithTransition, getTheme } from '../theme'
 
 export function renderLayout(content: string, currentPath: string): string {
@@ -47,5 +47,4 @@ export function initLayout(onSidebarToggle: () => void): void {
   }
 
   // Footer health check
-  initFooter()
 }

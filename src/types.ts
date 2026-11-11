@@ -1,124 +1,77 @@
-export interface Project {
-  auto_id: number
-  prefix: string
-  project_id: string
-  project_name: string
-  address: string | null
-  contact_number: string | null
-  update_by: string
-  update_date: string
-  is_active: boolean
-  is_delete: boolean
-  id_status: string
-}
+// ตรงกับ response ของ AAAAPI /api/v1/admin/* (ดู AAAAPI/src/admin.ts, guest.ts)
+
+export type PaymentStatus = 'NORMAL' | 'OVERDUE' | 'OVERDUE_SEVERE'
 
 export interface House {
-  auto_id: number
-  prefix: string
   house_id: string
-  project_id: string
   house_number: string
+  house_code: string | null
   zone_or_soi: string | null
-  update_by: string
+  payment_status: PaymentStatus
+  is_active: number
   update_date: string
-  is_active: boolean
-  is_delete: boolean
-  id_status: string
 }
 
-export interface User {
-  auto_id: number
-  prefix: string
+export interface Resident {
   user_id: string
-  project_id: string
   house_id: string | null
   full_name: string
   phone_number: string | null
   line_id: string | null
   role: string
-  update_by: string
+  is_active: number
   update_date: string
-  is_active: boolean
-  is_delete: boolean
-  id_status: string
 }
 
 export interface Vehicle {
-  auto_id: number
-  prefix: string
   vehicle_id: string
-  project_id: string
-  user_id: string
   license_plate: string
   province: string | null
   brand: string | null
   color: string | null
-  update_by: string
-  update_date: string
-  is_active: boolean
-  is_delete: boolean
+  is_active: number
+}
+
+export interface Credential {
+  credential_id: string
+  cred_type: 'RFID' | 'QRCODE' | 'PIN'
+  valid_from: string | null
+  valid_until: string | null
+  max_uses: number | null
+  use_count: number
+  is_active: number
   id_status: string
 }
 
-export interface Device {
-  auto_id: number
-  prefix: string
-  device_id: string
-  project_id: string
-  gate_name: string
-  device_type: string | null
-  ip_address: string | null
-  update_by: string
-  update_date: string
-  is_active: boolean
-  is_delete: boolean
-  id_status: string
+export interface ResidentDetail extends Resident {
+  vehicles: Vehicle[]
+  credentials: Credential[]
 }
 
-export interface AccessLog {
-  auto_id: number
-  prefix: string
-  log_id: string
-  project_id: string
-  device_id: string | null
+export interface Visitor {
+  visitor_id: string
+  house_id: string | null
+  house_number: string | null
+  house_code: string | null
+  full_name: string | null
+  phone_number: string | null
   license_plate: string | null
-  access_type: string | null
-  user_type: string | null
-  access_date: string
-  image_url: string | null
-  remark: string | null
-  is_success: boolean
-  update_by: string
-  update_date: string
-  is_active: boolean
-  is_delete: boolean
+  purpose: string | null
+  valid_from: string
+  valid_until: string
+  issued_by_type: string | null
+  issued_by_id: string | null
+  is_active: number
   id_status: string
+  is_valid_now: number
 }
 
-export interface Blacklist {
-  auto_id: number
-  prefix: string
-  blacklist_id: string
-  project_id: string
-  license_plate: string
-  reason: string | null
-  update_by: string
-  update_date: string
-  is_active: boolean
-  is_delete: boolean
-  id_status: string
-}
-
-export interface LoginRequest {
-  user_id: string
-  phone_number: string
-}
-
-export interface LoginResponse {
-  token: string
-  user_id: string
-  full_name: string
-  role: string
+export interface VisitorCreated {
+  visitor_id: string
+  valid_from: string
+  valid_until: string
+  credential_id?: string
+  code?: string
 }
 
 export interface AdminLoginRequest {
@@ -127,23 +80,7 @@ export interface AdminLoginRequest {
 }
 
 export interface AdminLoginResponse {
-  token: string
-  admin_id: string
-  full_name: string
-  role: string
-}
-
-export interface ListResponse<T> {
-  data: T[]
-  total: number
-}
-
-export interface SuccessResponse {
-  message: string
-  data?: unknown
-}
-
-export interface ErrorResponse {
-  error: string
-  message?: string
+  access_token: string
+  token_type: string
+  expires_in: number
 }

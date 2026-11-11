@@ -1,10 +1,17 @@
 import { api } from '../api'
-import type { ListResponse, House } from '../types'
+import type { House } from '../types'
 import { showConfirm, showAlert } from '../components/modal'
 import { initPagination, renderFooter, bindFooter, sliceData } from '../components/table-footer'
+import { escapeHtml as esc } from '../utils'
 
 let allData: House[] = []
 let pagination = initPagination()
+
+const PAYMENT_BADGE: Record<string, string> = {
+  NORMAL: 'badge-success',
+  OVERDUE: 'badge-warning',
+  OVERDUE_SEVERE: 'badge-danger',
+}
 
 export function render(): string {
   return `
@@ -18,10 +25,10 @@ export function render(): string {
           <table class="data-table">
             <thead>
               <tr>
-                <th>House ID</th>
                 <th>House Number</th>
-                <th>Project</th>
+                <th>House Code</th>
                 <th>Zone/Soi</th>
+                <th>Payment</th>
                 <th>Status</th>
                 <th>Actions</th>
               </tr>
@@ -56,10 +63,10 @@ async function loadData(): Promise<void> {
   const tbody = document.getElementById('data-tbody')
   if (!tbody) return
   try {
-    const res = await api.get<ListResponse<House>>('/houses')
-    allData = res.data
-    pagination.total = res.total
-    if (res.data.length === 0) {
+    const res = await api.get<{ houses: House[] }>('/houses')
+    allData = res.houses
+    pagination.total = allData.length
+    if (allData.length === 0) {
       tbody.innerHTML = `<tr><td colspan="6" class="text-center py-8 text-slate-400 dark:text-slate-500">No houses found</td></tr>`
       const fc = document.getElementById('footer-container')
       if (fc) fc.innerHTML = renderFooter(pagination)
@@ -70,7 +77,7 @@ async function loadData(): Promise<void> {
     if (fc) fc.innerHTML = renderFooter(pagination)
     bindFooter((p) => goPage(p), () => pagination)
   } catch (err) {
-    tbody.innerHTML = `<tr><td colspan="6" class="text-center py-8 text-red-500">${err instanceof Error ? err.message : 'Failed'}</td></tr>`
+    tbody.innerHTML = `<tr><td colspan="6" class="text-center py-8 text-red-500">${esc(err instanceof Error ? err.message : 'Failed')}</td></tr>`
   }
 }
 
@@ -80,15 +87,15 @@ function renderTable(): void {
   const pageData = sliceData(allData, pagination.page)
   tbody.innerHTML = pageData.map(h => `
     <tr>
-      <td class="font-mono text-sm">${esc(h.house_id)}</td>
       <td class="font-medium">${esc(h.house_number)}</td>
-      <td class="font-mono text-sm">${esc(h.project_id)}</td>
+      <td class="font-mono text-sm">${esc(h.house_code || '-')}</td>
       <td class="text-sm">${esc(h.zone_or_soi || '-')}</td>
-      <td><span class="badge badge-success">${esc(h.id_status)}</span></td>
+      <td><span class="badge ${PAYMENT_BADGE[h.payment_status] ?? 'badge-info'}">${esc(h.payment_status)}</span></td>
+      <td><span class="badge ${h.is_active ? 'badge-success' : 'badge-danger'}">${h.is_active ? 'ACTIVE' : 'INACTIVE'}</span></td>
       <td>
         <div class="flex gap-2">
           <button class="btn btn-primary btn-sm edit-btn" data-id="${esc(h.house_id)}">Edit</button>
-          <button class="btn btn-danger btn-sm delete-btn" data-id="${esc(h.house_id)}">Delete</button>
+          <button class="btn ${h.is_active ? 'btn-danger' : 'btn-secondary'} btn-sm toggle-btn" data-id="${esc(h.house_id)}">${h.is_active ? 'Disable' : 'Enable'}</button>
         </div>
       </td>
     </tr>
@@ -97,34 +104,42 @@ function renderTable(): void {
   tbody.querySelectorAll('.edit-btn').forEach(b =>
     b.addEventListener('click', () => showModal((b as HTMLElement).dataset.id))
   )
-  tbody.querySelectorAll('.delete-btn').forEach(b =>
-    b.addEventListener('click', () => deleteItem((b as HTMLElement).dataset.id!))
+  tbody.querySelectorAll('.toggle-btn').forEach(b =>
+    b.addEventListener('click', () => toggleActive((b as HTMLElement).dataset.id!))
   )
 }
 
 function showModal(id?: string): void {
+  const h = id ? allData.find(x => x.house_id === id) : undefined
   const modal = document.getElementById('data-modal')!
   modal.classList.remove('hidden')
   modal.innerHTML = `
     <div class="modal-content">
-      <h3 class="text-lg font-semibold mb-4">${id ? 'Edit' : 'New'} House</h3>
+      <h3 class="text-lg font-semibold mb-4">${h ? 'Edit' : 'New'} House</h3>
       <form id="form">
         <div id="form-error" class="bg-red-50 dark:bg-red-900/30 text-red-700 dark:text-red-400 text-sm rounded-lg p-3 mb-4 hidden"></div>
         <div class="form-group">
-          <label for="f-project-id">Project ID <span class="text-red-500">*</span></label>
-          <input id="f-project-id" type="text" required placeholder="e.g. PRJ-xxx"/>
+          <label for="f-number">House Number <span class="text-red-500">*</span></label>
+          <input id="f-number" type="text" required maxlength="32" placeholder="e.g. 123/45" value="${esc(h?.house_number ?? '')}"/>
         </div>
         <div class="form-group">
-          <label for="f-number">House Number <span class="text-red-500">*</span></label>
-          <input id="f-number" type="text" required placeholder="e.g. 123/45"/>
+          <label for="f-code">House Code (ใช้นำหน้า Guest Code)</label>
+          <input id="f-code" type="text" inputmode="numeric" pattern="[1-9][0-9]{0,5}" maxlength="6" placeholder="e.g. 9801" value="${esc(h?.house_code ?? '')}"/>
         </div>
         <div class="form-group">
           <label for="f-zone">Zone / Soi</label>
-          <input id="f-zone" type="text" placeholder="e.g. Soi 1"/>
+          <input id="f-zone" type="text" maxlength="64" placeholder="e.g. Soi 1" value="${esc(h?.zone_or_soi ?? '')}"/>
         </div>
+        ${h ? `
+        <div class="form-group">
+          <label for="f-payment">Payment Status</label>
+          <select id="f-payment">
+            ${['NORMAL', 'OVERDUE', 'OVERDUE_SEVERE'].map(s => `<option value="${s}" ${h.payment_status === s ? 'selected' : ''}>${s}</option>`).join('')}
+          </select>
+        </div>` : ''}
         <div class="flex justify-end gap-2 mt-6">
           <button type="button" id="modal-close" class="btn btn-secondary">Cancel</button>
-          <button type="submit" class="btn btn-primary"><svg id="form-spinner" class="spinner hidden mr-1" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/></svg>${id ? 'Update' : 'Create'}</button>
+          <button type="submit" class="btn btn-primary"><svg id="form-spinner" class="spinner hidden mr-1" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/></svg>${h ? 'Update' : 'Create'}</button>
         </div>
       </form>
     </div>
@@ -133,8 +148,6 @@ function showModal(id?: string): void {
   document.getElementById('modal-close')!.addEventListener('click', closeModal)
   modal.addEventListener('click', (e) => { if (e.target === modal) closeModal() })
 
-  if (id) loadItemData(id)
-
   document.getElementById('form')!.addEventListener('submit', async (e) => {
     e.preventDefault()
     const errEl = document.getElementById('form-error')!
@@ -142,14 +155,16 @@ function showModal(id?: string): void {
     errEl.classList.add('hidden')
     spinner.classList.remove('hidden')
 
-    const data = {
-      project_id: (document.getElementById('f-project-id') as HTMLInputElement).value.trim(),
-      house_number: (document.getElementById('f-number') as HTMLInputElement).value.trim(),
-      zone_or_soi: (document.getElementById('f-zone') as HTMLInputElement).value.trim() || null,
+    const val = (elId: string) => (document.getElementById(elId) as HTMLInputElement).value.trim()
+    const data: Record<string, unknown> = {
+      house_number: val('f-number'),
+      house_code: val('f-code') || null,
+      zone_or_soi: val('f-zone') || null,
     }
+    if (h) data.payment_status = val('f-payment')
 
     try {
-      if (id) await api.put(`/houses/${id}`, data)
+      if (h) await api.patch(`/houses/${encodeURIComponent(h.house_id)}`, data)
       else await api.post('/houses', data)
       closeModal()
       await loadData()
@@ -162,24 +177,16 @@ function showModal(id?: string): void {
   })
 }
 
-async function loadItemData(id: string): Promise<void> {
+async function toggleActive(id: string): Promise<void> {
+  const h = allData.find(x => x.house_id === id)
+  if (!h) return
+  if (h.is_active && !await showConfirm('Disable this house?')) return
   try {
-    const h = await api.get<House>(`/houses/${id}`)
-    ;(document.getElementById('f-project-id') as HTMLInputElement).value = h.project_id
-    ;(document.getElementById('f-number') as HTMLInputElement).value = h.house_number
-    ;(document.getElementById('f-zone') as HTMLInputElement).value = h.zone_or_soi || ''
-  } catch { /* ignore */ }
-}
-
-async function deleteItem(id: string): Promise<void> {
-  if (!await showConfirm('Delete this house?')) return
-  try {
-    await api.del(`/houses/${id}`)
+    await api.patch(`/houses/${encodeURIComponent(id)}`, { is_active: !h.is_active })
     await loadData()
   } catch (err) {
-    await showAlert(err instanceof Error ? err.message : 'Failed to delete')
+    await showAlert(esc(err instanceof Error ? err.message : 'Failed'))
   }
 }
 
 function closeModal(): void { document.getElementById('data-modal')!.classList.add('hidden') }
-function esc(s: string): string { const d = document.createElement('div'); d.textContent = s; return d.innerHTML }
