@@ -6,7 +6,7 @@ const AUTH_COOKIE = 'aaa_session'
 export interface AuthUser {
   id: string
   fullName: string
-  role: string
+  projectId: string
 }
 
 interface Session {
@@ -14,11 +14,20 @@ interface Session {
   user: AuthUser
 }
 
+/** Decoded JWT payload (no signature check; the API verifies the token). */
+export function tokenClaims(token: string): {
+  sub: string
+  pid: string
+  exp: number
+} {
+  const payload = token.split('.')[1].replace(/-/g, '+').replace(/_/g, '/')
+  return JSON.parse(atob(payload))
+}
+
 /** JWT `exp` in ms, or 0 when the token cannot be decoded. */
 export function tokenExpiry(token: string): number {
   try {
-    const payload = token.split('.')[1].replace(/-/g, '+').replace(/_/g, '/')
-    const exp = Number(JSON.parse(atob(payload)).exp)
+    const exp = Number(tokenClaims(token).exp)
     return Number.isFinite(exp) ? exp * 1000 : 0
   } catch {
     return 0

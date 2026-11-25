@@ -1,23 +1,30 @@
-# AAAADMIN — Axis Access Auto Admin Panel v2.0.0
+# AAAADMIN — Axis Access Auto Admin Panel v2.1.0
 
-Administrative dashboard for the AAA intelligent residential access management system.
+Administrative dashboard for the AAA intelligent residential access management system,
+talking to **AAAAPI** `/api/v1/admin/*` (Cloudflare Worker).
 
-v2 is a rewrite on the PlayDevX App Template Standard v1.1.0 default stack:
+v2 is built on the PlayDevX App Template Standard default stack:
 **React + shadcn/ui + TanStack (Router, Query, Table) + react-hook-form + zod**,
 started from [satnaing/shadcn-admin](https://github.com/satnaing/shadcn-admin)
 (MIT, pinned at commit `a156d9b`, see `LICENSE-shadcn-admin`).
 
 ## Features
 
-- **Admin login** against `POST /api/v1/auth/admin/login`, with a route guard on every page and a safe post-login redirect
-- **Dashboard**: project, house, user and vehicle counts, plus access logs from the last 7 days
-- **Six CRUD pages** (Projects, Houses, Users, Vehicles, Devices, Blacklist), all driven by one config: `src/features/resources/config.ts`
-- **Access Logs**: plate and date-range filters run on the server; the `To` date includes the whole day
-- **Data tables**: search, sorting, column visibility and pagination
-- **Accessible dialogs, selects and menus** (Radix)
-- **Light/Dark/System theme**: AAA Modern Minimal Blue tokens in `src/styles/theme.css`
-- **Fonts**: Google Sans with a Noto Sans Thai fallback
-- **System status** in the header, from `/api/v1/health`
+- **Admin login**: `POST /api/v1/admin/login` returns an admin JWT valid for 1 hour. A route guard protects every page, and the post-login redirect only goes to same-app paths.
+- **Dashboard** shows active houses, active residents, overdue houses and valid visitors.
+- **Houses**:
+  - house number and `house_code`, the Guest Code prefix (1–6 digits, validated like the API)
+  - `payment_status`, editable on update only
+  - enable / disable
+- **Residents**:
+  - create, edit, disable and re-activate
+  - **Access** dialog: vehicles (ANPR; plates are normalized by the API), RFID / QR / PIN credentials (a PIN must be 4–8 digits, with optional valid-until), and a LINE link code shown once
+- **Visitors**:
+  - issue a visitor pass for a house that has a `house_code`, or for the common area
+  - set a duration and optionally issue a Guest Code, which is **shown once** and must be closed with Done
+  - revoke a pass, and filter the list to valid passes only
+- **Data tables** support search, sorting, column visibility and pagination. Dialogs, selects and menus are accessible (Radix).
+- **Light/Dark/System theme** uses the AAA Modern Minimal Blue tokens. Fonts are Google Sans with a Noto Sans Thai fallback.
 
 ## Tech Stack
 
@@ -38,37 +45,39 @@ started from [satnaing/shadcn-admin](https://github.com/satnaing/shadcn-admin)
 src/
 ├── components/
 │   ├── data-table/          # Generic DataTable + toolbar/pagination
-│   ├── layout/              # Sidebar, AppHeader, nav (sidebar-data.ts)
+│   ├── layout/              # Sidebar, Page shell, nav (sidebar-data.ts)
+│   ├── form-fields.tsx      # TextField / SelectField (react-hook-form)
 │   └── ui/                  # shadcn/ui components
 ├── features/
-│   ├── access-logs/         # Filters + columns (data.tsx) + page
 │   ├── auth/sign-in/        # Admin login form
 │   ├── dashboard/
 │   ├── errors/
-│   └── resources/           # config.ts (6 CRUD resources) + generic page/dialog
+│   ├── houses/              # data.ts (query, schema, payload) + page
+│   ├── residents/           # data.ts + page + resident / access dialogs
+│   └── visitors/            # data.ts + page + Guest Code dialog
 ├── lib/                     # api.ts, types.ts, cookies.ts, utils.ts
 ├── routes/                  # TanStack file routes (_authenticated/* guarded)
 ├── stores/auth-store.ts     # Session (token + admin), JWT expiry check
 └── styles/                  # Tailwind + theme tokens
 ```
 
-To add a CRUD page, add an entry to `resources` in `src/features/resources/config.ts`. Then add a route file and a sidebar entry.
+Each feature keeps API calls, zod schemas and payload mapping in `data.ts` (unit-tested in `src/features/payloads.test.ts`) and UI in `index.tsx`.
 
 ## Development
 
 ```bash
 pnpm install
-pnpm dev          # Vite on :5173, proxies /api to http://localhost:8089
+pnpm dev          # Vite on :5173, proxies /api to http://localhost:8787 (run `pnpm dev` in ../AAAAPI first)
 pnpm build        # tsc -b && vite build -> dist/
 pnpm lint && pnpm knip
 pnpm test         # needs: pnpm exec playwright install chromium
 ```
 
-## Deployment (Cloudflare Pages / Workers Static Assets)
+## Deployment (Cloudflare Pages)
 
-- Build command: `pnpm build`. Output directory: `dist`.
-- Pages serves `index.html` for unknown paths (SPA fallback).
-- `/api/*` must reach the backend on the **same origin**. Use a route or a Pages Function proxy, so CORS is not needed.
+- Build command: `pnpm build`. Output directory: `dist`. Pages serves `index.html` for unknown paths (SPA fallback).
+- `.env.production` sets `VITE_API_BASE` to the AAA API origin (`https://aaa-api.cookievirus.workers.dev`).
+- The API must allow the Pages origin in `ALLOWED_ORIGINS` (currently `https://aaa-admin.pages.dev`). Preview URLs are not allowed.
 
 ## Security notes
 
@@ -77,16 +86,17 @@ pnpm test         # needs: pnpm exec playwright install chromium
 
 ## Changelog
 
-### v2.0.0
-- Rewrite on shadcn/ui + TanStack (from shadcn-admin `a156d9b`); the demo pages and Clerk were removed
-- Generic config-driven CRUD pages
-- Access-log `To` date now includes the whole selected day (v1 excluded it)
-- Session moved from `localStorage` to a `SameSite=Strict` cookie with JWT expiry checks
-- Post-login redirect is limited to same-app paths
-- Tests for the auth store, login form, payload/validation helpers and log filters
+### v2.1.0
+- Port v2 (shadcn/ui + TanStack) to the AAAAPI admin API from v1.3.0 (`/api/v1/admin/*`, `{ error, field }` errors, `access_token` login)
+- Pages: Dashboard, Houses, Residents (with an Access dialog), Visitors (with a Guest Code dialog)
+- Remove the Projects, Vehicles, Devices, Blacklist and Access Logs pages (they are not in the admin API)
+- Dialog forms reset each time they open (fixes stale values on a second create)
 
-### v1.2.0 / v1.1.5
-- Vanilla TypeScript + Tailwind v4 version (see git history)
+### v2.0.0
+- Rewrite on shadcn/ui + TanStack against the pre-1.3.0 API (superseded by v2.1.0)
+
+### v1.3.0
+- Vanilla TypeScript version wired to `/api/v1/admin/*` (see git history)
 
 ## License
 

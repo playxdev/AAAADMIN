@@ -22,7 +22,8 @@ export default defineConfig({
   server: {
     port: 5173,
     proxy: {
-      '/api': { target: 'http://localhost:8089', changeOrigin: true },
+      // AAAAPI: `pnpm dev` (wrangler dev)
+      '/api': { target: 'http://localhost:8787', changeOrigin: true },
     },
   },
   resolve: {

@@ -32,7 +32,9 @@ export function NavUser() {
       </Avatar>
       <div className='grid flex-1 text-start text-sm leading-tight'>
         <span className='truncate font-semibold'>{name}</span>
-        <span className='truncate text-xs'>{user?.role}</span>
+        <span className='truncate text-xs'>
+          {user && `Project ${user.projectId}`}
+        </span>
       </div>
     </>
   )
