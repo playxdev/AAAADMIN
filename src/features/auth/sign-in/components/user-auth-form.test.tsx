@@ -46,6 +46,11 @@ describe('UserAuthForm', () => {
     await expect
       .element(screen.getByText('Please enter your password.'))
       .toBeVisible()
+    await expect
+      .element(
+        screen.getByText('4 letters + 4 letters/digits, e.g. PROJ-0001.')
+      )
+      .toBeVisible()
     expect(mocks.post).not.toHaveBeenCalled()
   })
 
@@ -53,9 +58,15 @@ describe('UserAuthForm', () => {
     const b64 = (o: object) => btoa(JSON.stringify(o)).replace(/=+$/, '')
     const token = `${b64({ alg: 'HS256' })}.${b64({ sub: 'ADM-1', pid: 'PRJ-1', exp: 4e9 })}.sig`
     mocks.post.mockResolvedValue({
-      data: { access_token: token, token_type: 'Bearer', expires_in: 3600 },
+      data: {
+        access_token: token,
+        token_type: 'Bearer',
+        expires_in: 3600,
+        project_code: 'PROJ-0001',
+      },
     })
     const screen = await render(<UserAuthForm redirectTo='/visitors' />)
+    await userEvent.fill(screen.getByLabelText('Project Code'), 'proj0001')
     await userEvent.fill(screen.getByLabelText('Admin Name'), 'admin')
     await userEvent.fill(screen.getByLabelText('Password'), 'secret')
     await userEvent.click(screen.getByRole('button', { name: 'Sign in' }))
@@ -67,6 +78,7 @@ describe('UserAuthForm', () => {
       })
     )
     expect(mocks.post).toHaveBeenCalledWith('/login', {
+      project_code: 'PROJ-0001',
       admin_name: 'admin',
       password: 'secret',
     })
@@ -74,12 +86,14 @@ describe('UserAuthForm', () => {
       id: 'ADM-1',
       fullName: 'admin',
       projectId: 'PRJ-1',
+      projectCode: 'PROJ-0001',
     })
   })
 
   it('stays on the page when login fails', async () => {
     mocks.post.mockRejectedValue(new Error('invalid credentials'))
     const screen = await render(<UserAuthForm />)
+    await userEvent.fill(screen.getByLabelText('Project Code'), 'PROJ-0001')
     await userEvent.fill(screen.getByLabelText('Admin Name'), 'admin')
     await userEvent.fill(screen.getByLabelText('Password'), 'wrong')
     await userEvent.click(screen.getByRole('button', { name: 'Sign in' }))

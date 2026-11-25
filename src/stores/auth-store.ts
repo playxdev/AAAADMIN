@@ -7,6 +7,8 @@ export interface AuthUser {
   id: string
   fullName: string
   projectId: string
+  /** e.g. PROJ-0001 (missing in sessions saved before v2.3.0). */
+  projectCode?: string
 }
 
 interface Session {

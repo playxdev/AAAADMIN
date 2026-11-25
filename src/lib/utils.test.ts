@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { getPageNumbers } from './utils'
+import { getPageNumbers, normalizeProjectCode } from './utils'
 
 describe('getPageNumbers', () => {
   it('returns all pages when total is at most 5', () => {
@@ -24,5 +24,14 @@ describe('getPageNumbers', () => {
   it('handles current page greater than total pages', () => {
     expect(getPageNumbers(6, 5)).toEqual([1, 2, 3, 4, 5])
     expect(getPageNumbers(11, 10)).toEqual([1, '...', 7, 8, 9, 10])
+  })
+})
+
+describe('normalizeProjectCode', () => {
+  it('accepts AAAA-AA11 in any case, with or without dash', () => {
+    expect(normalizeProjectCode(' proj0001 ')).toBe('PROJ-0001')
+    expect(normalizeProjectCode('SNTW-BK01')).toBe('SNTW-BK01')
+    expect(normalizeProjectCode('PRJ-0001')).toBeNull()
+    expect(normalizeProjectCode('1234-ABCD')).toBeNull()
   })
 })

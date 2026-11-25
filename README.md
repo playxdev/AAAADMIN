@@ -1,4 +1,4 @@
-# AAAADMIN — Axis Access Auto Admin Panel v2.2.0
+# AAAADMIN — Axis Access Auto Admin Panel v2.3.0
 
 Administrative dashboard for the AAA intelligent residential access management system,
 talking to **AAAAPI** `/api/v1/admin/*` (Cloudflare Worker).
@@ -10,7 +10,7 @@ started from [satnaing/shadcn-admin](https://github.com/satnaing/shadcn-admin)
 
 ## Features
 
-- **Admin login**: `POST /api/v1/admin/login` returns an admin JWT valid for 1 hour. A route guard protects every page, and the post-login redirect only goes to same-app paths.
+- **Admin login** with **project code** (`AAAA-AA11`, e.g. `PROJ-0001`; any case, dash optional, remembered on the device) + admin name + password: `POST /api/v1/admin/login` returns an admin JWT valid for 1 hour. A route guard protects every page, and the post-login redirect only goes to same-app paths.
 - **Dashboard** shows active houses, occupied houses, overdue houses and valid visitors.
 - **Houses** (access belongs to the house, not to a person):
   - house number and `house_code`, the Guest Code prefix (1–6 digits, validated like the API)
@@ -90,6 +90,9 @@ pnpm test         # needs: pnpm exec playwright install chromium
 - The session (Bearer JWT + admin profile) is stored in a `SameSite=Strict` cookie, with `Secure` on HTTPS. JavaScript can read this cookie, so it can be stolen through XSS. Move to an HttpOnly cookie issued by the API once the backend supports it (App Template Standard §2).
 
 ## Changelog
+
+### v2.3.0
+- Sign in with project code + admin name + password (AAAAPI migration `0005`); the last project code is remembered in the `project_code` cookie; sidebar / account menu show the project code
 
 ### v2.2.0
 - Access belongs to the house: Houses page gets contacts (owner / resident / tenant), occupancy (vacant = everything off) and the Access dialog; Residents page removed (AAAAPI `/houses/:id/*`, `/contacts/*`, migration `0004`)

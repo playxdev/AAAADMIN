@@ -92,3 +92,11 @@ export function endOfDayUtc(date: string): string {
     .replace('T', ' ')
     .slice(0, 19)
 }
+
+/** Same rule as AAAAPI: AAAA-AA11, any case, dash / spaces optional -> "PROJ-0001"; invalid = null. */
+export function normalizeProjectCode(v: string): string | null {
+  const c = v.toUpperCase().replace(/[\s-]/g, '')
+  return /^[A-Z]{4}[A-Z0-9]{4}$/.test(c)
+    ? `${c.slice(0, 4)}-${c.slice(4)}`
+    : null
+}

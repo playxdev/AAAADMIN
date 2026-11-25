@@ -7,9 +7,10 @@ import { Loader2, LogIn } from 'lucide-react'
 import { toast } from 'sonner'
 import { tokenClaims, useAuthStore } from '@/stores/auth-store'
 import { api, apiErrorMessage } from '@/lib/api'
+import { getCookie, setCookie } from '@/lib/cookies'
 import { k, t as tNow, useT } from '@/lib/i18n'
 import type { AdminLoginRequest, AdminLoginResponse } from '@/lib/types'
-import { cn, safeRedirect } from '@/lib/utils'
+import { cn, normalizeProjectCode, safeRedirect } from '@/lib/utils'
 import { Button } from '@/components/ui/button'
 import {
   Form,
@@ -22,7 +23,12 @@ import {
 import { Input } from '@/components/ui/input'
 import { PasswordInput } from '@/components/password-input'
 
+const PROJECT_CODE_COOKIE = 'project_code'
+
 const formSchema = z.object({
+  project_code: z
+    .string()
+    .refine((v) => normalizeProjectCode(v) !== null, k('v.projectCode')),
   admin_name: z.string().trim().min(1, k('v.adminName')),
   password: z.string().min(1, k('v.password')),
 })
@@ -43,19 +49,29 @@ export function UserAuthForm({
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
-    defaultValues: { admin_name: '', password: '' },
+    // Remembered from the last successful login on this device.
+    defaultValues: {
+      project_code: getCookie(PROJECT_CODE_COOKIE) ?? '',
+      admin_name: '',
+      password: '',
+    },
   })
 
   async function onSubmit(data: AdminLoginRequest) {
     setIsLoading(true)
     try {
-      const res = await api.post<AdminLoginResponse>('/login', data)
+      const res = await api.post<AdminLoginResponse>('/login', {
+        ...data,
+        project_code: normalizeProjectCode(data.project_code),
+      })
       const claims = tokenClaims(res.data.access_token)
+      setCookie(PROJECT_CODE_COOKIE, res.data.project_code, 60 * 60 * 24 * 365)
       // The admin JWT carries only sub (admin id) and pid (project id).
       auth.setSession(res.data.access_token, {
         id: claims.sub,
         fullName: data.admin_name,
         projectId: claims.pid,
+        projectCode: res.data.project_code,
       })
       toast.success(tNow('auth.welcome', { name: data.admin_name }))
       navigate({ to: safeRedirect(redirectTo), replace: true })
@@ -73,6 +89,26 @@ export function UserAuthForm({
         className={cn('grid gap-3', className)}
         {...props}
       >
+        <FormField
+          control={form.control}
+          name='project_code'
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>{t('auth.projectCode')}</FormLabel>
+              <FormControl>
+                <Input
+                  placeholder={t('auth.projectCodePh')}
+                  autoComplete='organization'
+                  autoCapitalize='characters'
+                  className='font-mono uppercase'
+                  maxLength={10}
+                  {...field}
+                />
+              </FormControl>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
         <FormField
           control={form.control}
           name='admin_name'

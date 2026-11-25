@@ -81,6 +81,7 @@ export interface VisitorCreated {
 }
 
 export interface AdminLoginRequest {
+  project_code: string
   admin_name: string
   password: string
 }
@@ -89,4 +90,6 @@ export interface AdminLoginResponse {
   access_token: string
   token_type: string
   expires_in: number
+  /** Canonical project code, e.g. PROJ-0001. */
+  project_code: string
 }

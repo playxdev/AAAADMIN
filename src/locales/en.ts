@@ -228,6 +228,9 @@ export const en = {
   // auth
   'auth.title': 'Admin sign in',
   'auth.desc': 'Sign in with your administrator account.',
+  'auth.projectCode': 'Project Code',
+  'auth.projectCodePh': 'e.g. PROJ-0001',
+  'v.projectCode': '4 letters + 4 letters/digits, e.g. PROJ-0001.',
   'auth.name': 'Admin Name',
   'auth.namePh': 'Admin username',
   'auth.password': 'Password',

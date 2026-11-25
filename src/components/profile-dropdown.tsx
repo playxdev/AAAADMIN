@@ -40,7 +40,10 @@ export function ProfileDropdown() {
             <div className='flex flex-col gap-1.5'>
               <p className='text-sm leading-none font-medium'>{name}</p>
               <p className='text-xs leading-none text-muted-foreground'>
-                {user && t('account.project', { id: user.projectId })}
+                {user &&
+                  t('account.project', {
+                    id: user.projectCode ?? user.projectId,
+                  })}
               </p>
             </div>
           </DropdownMenuLabel>

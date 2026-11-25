@@ -229,6 +229,9 @@ export const th: Record<keyof typeof en, string> = {
   // auth
   'auth.title': 'เข้าสู่ระบบผู้ดูแล',
   'auth.desc': 'เข้าสู่ระบบด้วยบัญชีผู้ดูแลระบบ',
+  'auth.projectCode': 'รหัสโครงการ',
+  'auth.projectCodePh': 'เช่น PROJ-0001',
+  'v.projectCode': 'ตัวอักษร 4 ตัว + ตัวอักษร/ตัวเลข 4 ตัว เช่น PROJ-0001',
   'auth.name': 'ชื่อผู้ดูแล',
   'auth.namePh': 'ชื่อผู้ใช้ผู้ดูแล',
   'auth.password': 'รหัสผ่าน',

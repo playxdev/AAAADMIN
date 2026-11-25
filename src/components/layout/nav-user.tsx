@@ -35,7 +35,8 @@ export function NavUser() {
       <div className='grid flex-1 text-start text-sm leading-tight'>
         <span className='truncate font-semibold'>{name}</span>
         <span className='truncate text-xs'>
-          {user && t('account.project', { id: user.projectId })}
+          {user &&
+            t('account.project', { id: user.projectCode ?? user.projectId })}
         </span>
       </div>
     </>
