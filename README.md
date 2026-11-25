@@ -1,132 +1,103 @@
-# AAAADMIN — Axis Access Auto Admin Panel v1.3.0
+# AAAADMIN — Axis Access Auto Admin Panel v2.1.0
 
-Administrative dashboard for the AAA intelligent residential access management system. Built with **TypeScript**, **Vite**, and **Tailwind CSS v4**.
+Administrative dashboard for the AAA intelligent residential access management system,
+talking to **AAAAPI** `/api/v1/admin/*` (Cloudflare Worker).
+
+v2 is built on the PlayDevX App Template Standard default stack:
+**React + shadcn/ui + TanStack (Router, Query, Table) + react-hook-form + zod**,
+started from [satnaing/shadcn-admin](https://github.com/satnaing/shadcn-admin)
+(MIT, pinned at commit `a156d9b`, see `LICENSE-shadcn-admin`).
 
 ## Features
 
-- **Admin Login** — `POST /api/v1/admin/login` (PBKDF2 on the API side) → admin JWT, 1 hour
-- **Dark/Light Mode** — CSS variables + `data-theme` + View Transitions API circular ripple reveal
-- **Collapsible Sidebar** — hamburger toggle with icon-rail navigation, `localStorage` persistence
-- **Houses** — house number, `house_code`, `payment_status`, enable / disable
-- **Residents** — resident CRUD + Access modal: plates (ANPR), RFID / QR / PIN, LINE link code
-- **Visitors** — issue visitor / Guest Code (shown once) for a house or common area, revoke
-- **Dashboard** — active houses, residents, overdue houses, valid visitors
-- **DataTable Pagination** — client-side pagination with summary footer on all tables (15/page)
-- **Modal Dialogs** — styled confirm/alert modals replacing browser popups
-- **SVG Progress Spinner** — rotating ring indicator on form submits and loading states
-- **Toast Notifications** — centered top slide-down alerts
-- **Google Sans Font** — Thai + Latin character support
+- **Admin login**: `POST /api/v1/admin/login` returns an admin JWT valid for 1 hour. A route guard protects every page, and the post-login redirect only goes to same-app paths.
+- **Dashboard** shows active houses, active residents, overdue houses and valid visitors.
+- **Houses**:
+  - house number and `house_code`, the Guest Code prefix (1–6 digits, validated like the API)
+  - `payment_status`, editable on update only
+  - enable / disable
+- **Residents**:
+  - create, edit, disable and re-activate
+  - **Access** dialog: vehicles (ANPR; plates are normalized by the API), RFID / QR / PIN credentials (a PIN must be 4–8 digits, with optional valid-until), and a LINE link code shown once
+- **Visitors**:
+  - issue a visitor pass for a house that has a `house_code`, or for the common area
+  - set a duration and optionally issue a Guest Code, which is **shown once** and must be closed with Done
+  - revoke a pass, and filter the list to valid passes only
+- **Data tables** support search, sorting, column visibility and pagination. Dialogs, selects and menus are accessible (Radix).
+- **Light/Dark/System theme** uses the AAA Modern Minimal Blue tokens. Fonts are Google Sans with a Noto Sans Thai fallback.
 
 ## Tech Stack
 
-| Component      | Technology                        |
-|--------------- |---------------------------------- |
-| Language       | TypeScript                        |
-| Bundler        | Vite v8                           |
-| Styling        | Tailwind CSS v4 + CSS variables   |
-| Theme System   | `data-theme` + View Transitions API |
-| Font           | Google Sans (Thai + Latin)        |
-| Routing        | Hash-based client-side router     |
+| Component | Technology |
+|---|---|
+| Language | TypeScript |
+| UI | React 19, shadcn/ui (Radix), Tailwind CSS v4 |
+| Routing | TanStack Router (file-based, `src/routes`) |
+| Data | TanStack Query + axios (`src/lib/api.ts`) |
+| Tables | TanStack Table (`src/components/data-table`) |
+| Forms | react-hook-form + zod |
+| Bundler | Vite 8 |
+| Tests | Vitest browser mode (Playwright Chromium) |
 
-## Architecture
+## Structure
 
 ```
 src/
-├── components/           # Reusable shared UI components
-│   ├── layout.ts        # Main layout composition + init wiring
-│   ├── sidebar.ts       # Left navigation (collapsible)
-│   ├── header.ts        # Top bar (title, hamburger, theme toggle)
-│   ├── footer.ts        # Bottom bar (copyright, version)
-│   ├── modal.ts         # Confirm/alert modal dialogs
-│   └── table-footer.ts  # Pagination + data summary footer
-├── pages/               # Page-specific content only
-│   ├── login.ts         # Admin login form
-│   ├── dashboard.ts     # Stats grid
-│   ├── houses.ts        # Houses: house_code, payment_status, enable/disable
-│   ├── users.ts         # Residents + vehicles / credentials / LINE link code (route /users)
-│   └── visitors.ts      # Visitors + Guest Code
-├── router.ts            # Route registry, navigation, orchestration
-├── theme.ts             # Dark/light toggle + View Transitions API
-├── auth.ts              # JWT + admin login functions
-├── api.ts               # HTTP client for /api/v1/admin/* with Bearer auth
-├── types.ts             # TypeScript interfaces
-├── toast.ts             # Toast notification helpers
-├── utils.ts             # Shared utilities (escapeHtml, getPageTitle)
-├── style.css            # Tailwind imports + CSS variables + theme
-└── main.ts              # Entry point, route registration, theme init
+├── components/
+│   ├── data-table/          # Generic DataTable + toolbar/pagination
+│   ├── layout/              # Sidebar, Page shell, nav (sidebar-data.ts)
+│   ├── form-fields.tsx      # TextField / SelectField (react-hook-form)
+│   └── ui/                  # shadcn/ui components
+├── features/
+│   ├── auth/sign-in/        # Admin login form
+│   ├── dashboard/
+│   ├── errors/
+│   ├── houses/              # data.ts (query, schema, payload) + page
+│   ├── residents/           # data.ts + page + resident / access dialogs
+│   └── visitors/            # data.ts + page + Guest Code dialog
+├── lib/                     # api.ts, types.ts, cookies.ts, utils.ts
+├── routes/                  # TanStack file routes (_authenticated/* guarded)
+├── stores/auth-store.ts     # Session (token + admin), JWT expiry check
+└── styles/                  # Tailwind + theme tokens
 ```
 
-### Component Responsibility
-
-| Component       | Renders                    | State Owned       | Events Handled     |
-|---------------- |--------------------------- |------------------ |------------------- |
-| `sidebar`       | Nav links, user info       | Collapse state    | (layout wires)     |
-| `header`        | Page title, buttons        | —                 | (layout wires)     |
-| `footer`        | Copyright, version         | —                 | —                  |
-| `layout`        | All above + `<main>`       | —                 | Theme, sidebar     |
-| `modal`         | Confirm/alert dialogs      | Promise resolve   | OK/Cancel/overlay  |
-| `table-footer`  | Pagination + record count  | —                 | Page navigation    |
+Each feature keeps API calls, zod schemas and payload mapping in `data.ts` (unit-tested in `src/features/payloads.test.ts`) and UI in `index.tsx`.
 
 ## Development
 
 ```bash
-cd AAAADMIN
-npm install          # Install dependencies
-npm run dev          # Start Vite dev server on :5173
-npm run build        # TypeScript check + production build → dist/
+pnpm install
+pnpm dev          # Vite on :5173, proxies /api to http://localhost:8787 (run `pnpm dev` in ../AAAAPI first)
+pnpm build        # tsc -b && vite build -> dist/
+pnpm lint && pnpm knip
+pnpm test         # needs: pnpm exec playwright install chromium
 ```
 
-The dev server proxies `/api` to `http://localhost:8787` — run `npm run dev` in `../AAAAPI` (`wrangler dev`) first.
+## Deployment (Cloudflare Pages)
 
-## Deploy (Cloudflare Pages)
+- Build command: `pnpm build`. Output directory: `dist`. Pages serves `index.html` for unknown paths (SPA fallback).
+- `.env.production` sets `VITE_API_BASE` to the AAA API origin (`https://aaa-api.cookievirus.workers.dev`).
+- The API must allow the Pages origin in `ALLOWED_ORIGINS` (currently `https://aaa-admin.pages.dev`). Preview URLs are not allowed.
 
-Production: `https://aaa-admin.pages.dev` (Pages project `aaa-admin`, account Cookievirus)
+## Security notes
 
-```bash
-npm run build        # uses .env.production: VITE_API_BASE=https://aaa-api.cookievirus.workers.dev
-CLOUDFLARE_ACCOUNT_ID=30ec5dca725dd7acef6a6ef89342e403 \
-  ../AAAAPI/node_modules/.bin/wrangler pages deploy dist --project-name=aaa-admin --branch=main
-```
-
-- The Pages origin must be listed in `ALLOWED_ORIGINS` of AAAAPI (exact match, so preview URLs `<hash>.aaa-admin.pages.dev` cannot call the API)
-- Newer wrangler versions try to convert Pages to Workers and edit `package.json`; the project already exists on Pages, so plain `pages deploy` works
-
-## Design Principles
-
-- **DRY** — Shared layout in `components/`, pages contain only content
-- **Single Source of Truth** — Modify sidebar/header/footer once, affects all pages
-- **Separation of Concerns** — Components render HTML; `layout.ts` handles wiring
-- **No Circular Dependencies** — `utils.ts` is a leaf module
-
-## Theme System
-
-- CSS variables on `:root` (light) and `[data-theme="dark"]` (dark)
-- `localStorage` persistence + `prefers-color-scheme` fallback
-- View Transitions API: circular ripple from click position (500–700ms)
-- Graceful fallback when View Transitions API is unavailable
-- `prefers-reduced-motion` disables all animations
+- Every permission check must happen in the backend API. The route guard only hides UI.
+- The session (Bearer JWT + admin profile) is stored in a `SameSite=Strict` cookie, with `Secure` on HTTPS. JavaScript can read this cookie, so it can be stolen through XSS. Move to an HttpOnly cookie issued by the API once the backend supports it (App Template Standard §2).
 
 ## Changelog
 
+### v2.1.0
+- Port v2 (shadcn/ui + TanStack) to the AAAAPI admin API from v1.3.0 (`/api/v1/admin/*`, `{ error, field }` errors, `access_token` login)
+- Pages: Dashboard, Houses, Residents (with an Access dialog), Visitors (with a Guest Code dialog)
+- Remove the Projects, Vehicles, Devices, Blacklist and Access Logs pages (they are not in the admin API)
+- Dialog forms reset each time they open (fixes stale values on a second create)
+
+### v2.0.0
+- Rewrite on shadcn/ui + TanStack against the pre-1.3.0 API (superseded by v2.1.0)
+
 ### v1.3.0
-- Wired to AAAAPI `/api/v1/admin/*`: login, houses, residents, vehicles, credentials, LINE link code, visitors
-- New Visitors page with one-time Guest Code display
-- Removed Projects / Vehicles / Devices / Access Logs / Blacklist pages and footer health check (no API yet)
-- Dev proxy to `wrangler dev` (`:8787`), production API origin via `VITE_API_BASE`
-- Deployed to Cloudflare Pages: `https://aaa-admin.pages.dev`
-
-### v1.2.0
-- DataTable pagination with summary footer on all pages
-- Modal confirm/alert dialogs replacing browser popups
-- SVG circular progress spinner on all form submits
-- CSS specificity fix for modal overlay blocking clicks
-- Nil-slice-to-empty-slice fix in backend List handlers (JSON null → [])
-- SQL placeholder counter fix for optional query filters
-- Login page: theme toggle + copyright footer + admin-only mode
-
-### v1.1.5
-- Initial release with 8 management pages, JWT auth, edge sync
+- Vanilla TypeScript version wired to `/api/v1/admin/*` (see git history)
 
 ## License
 
-Proprietary. All rights reserved.
+Proprietary. All rights reserved. Third-party code: see `LICENSE-shadcn-admin` (MIT).
