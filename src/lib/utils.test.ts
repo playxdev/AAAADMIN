@@ -1,5 +1,10 @@
 import { describe, expect, it } from 'vitest'
-import { getPageNumbers, normalizeProjectCode } from './utils'
+import {
+  digitsOnly,
+  getPageNumbers,
+  normalizeProjectCode,
+  plateCategoryChars,
+} from './utils'
 
 describe('getPageNumbers', () => {
   it('returns all pages when total is at most 5', () => {
@@ -33,5 +38,13 @@ describe('normalizeProjectCode', () => {
     expect(normalizeProjectCode('SNTW-BK01')).toBe('SNTW-BK01')
     expect(normalizeProjectCode('PRJ-0001')).toBeNull()
     expect(normalizeProjectCode('1234-ABCD')).toBeNull()
+  })
+})
+
+describe('digitsOnly / plateCategoryChars', () => {
+  it('drops Thai vowels from the Thai number row and maps Thai digits', () => {
+    expect(digitsOnly('5ุ5ึ55')).toBe('5555')
+    expect(digitsOnly('๑๒๓๔')).toBe('1234')
+    expect(plateCategoryChars('1กุข ')).toBe('1กข')
   })
 })

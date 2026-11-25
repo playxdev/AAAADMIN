@@ -215,7 +215,6 @@ export const th: Record<keyof typeof en, string> = {
   'vis.new': 'เพิ่มผู้มาติดต่อ',
   'vis.search': 'ค้นหาผู้มาติดต่อ...',
   'vis.newTitle': 'เพิ่มผู้มาติดต่อ',
-  'vis.commonAreaOpt': 'พื้นที่ส่วนกลาง (ไม่ระบุบ้าน)',
   'vis.noHouseCode': '{n} (ไม่มีรหัสบ้าน)',
   'vis.duration': 'ระยะเวลา',
   'vis.name': 'ชื่อ',
@@ -338,4 +337,73 @@ export const th: Record<keyof typeof en, string> = {
   'pw.contactLine': 'ติดต่อ PlayDevX ทาง LINE',
   'api.WRONG_PASSWORD': 'รหัสผ่านปัจจุบันไม่ถูกต้อง',
   'api.PASSWORD_CHANGE_REQUIRED': 'กรุณาตั้งรหัสผ่านใหม่ก่อน',
+
+  // access log
+  'log.title': 'การเข้าออกล่าสุด',
+  'log.time': 'เวลา',
+  'log.direction': 'ทิศทาง',
+  'log.entry': 'เข้า',
+  'log.exit': 'ออก',
+  'log.method': 'วิธี',
+  'log.gate': 'ประตู',
+  'log.result': 'ผล',
+  'log.allowed': 'ผ่าน',
+  'log.denied': 'ไม่ผ่าน',
+  'log.error': 'ขัดข้อง',
+  'reason.RESIDENT_ACTIVE': 'คนในบ้าน',
+  'reason.RESIDENT_OVERDUE_ALLOWED': 'คนในบ้าน (ค้างชำระ)',
+  'reason.VISITOR_VALID': 'ผู้มาติดต่อ',
+  'reason.RESIDENT_OVERDUE': 'ค้างชำระ: วิธีนี้ใช้ไม่ได้',
+  'reason.RESIDENT_OVERDUE_SEVERE': 'ค้างชำระนาน: ใช้ได้แค่ PIN',
+  'reason.METHOD_NOT_ALLOWED': 'วิธีนี้ไม่ได้รับอนุญาต',
+  'reason.BLACKLISTED': 'ทะเบียนต้องห้าม',
+  'reason.UNKNOWN_PLATE': 'ไม่รู้จักทะเบียน',
+  'reason.UNKNOWN_CREDENTIAL': 'ไม่รู้จักบัตร / รหัส',
+  'reason.CREDENTIAL_REVOKED': 'ถูกเพิกถอน',
+  'reason.CREDENTIAL_NOT_YET_VALID': 'ยังไม่ถึงเวลาใช้',
+  'reason.CREDENTIAL_EXPIRED': 'หมดอายุ',
+  'reason.CREDENTIAL_USED_UP': 'ใช้ครบแล้ว',
+  'reason.USER_INACTIVE': 'บ้านปิดใช้งาน',
+  'reason.HOUSE_VACANT': 'บ้านไม่มีผู้อยู่อาศัย',
+  'reason.VISITOR_NOT_VALID': 'บัตรผู้มาติดต่อใช้ไม่ได้',
+  'reason.PLATE_AMBIGUOUS': 'ทะเบียนซ้ำหลายจังหวัด',
+  'reason.HOUSE_MISMATCH': 'ไม่ตรงบ้าน',
+  'reason.TOO_MANY_ATTEMPTS': 'กดรหัสผิดบ่อยเกินไป',
+  'reason.INTERNAL_ERROR': 'ระบบขัดข้อง',
+
+  // visitors edit
+  'vis.statusActive': 'ใช้งาน',
+  'vis.editTitle': 'แก้ไขผู้มาติดต่อ',
+  'vis.updated': 'บันทึกผู้มาติดต่อแล้ว',
+  'v.province': 'เลือกจังหวัดจากรายการ (ภาษาไทย)',
+  'vis.commonAreaOpt': 'พื้นที่ส่วนกลาง (ไม่ระบุบ้าน)',
+
+  // project master
+  'proj.editTitle': 'ตั้งค่าโครงการ',
+  'proj.updated': 'บันทึกโครงการแล้ว',
+  'proj.commonAreaCode': 'รหัสพื้นที่ส่วนกลาง',
+  'proj.commonAreaHint':
+    'Guest Code ของพื้นที่ส่วนกลางขึ้นต้นด้วยรหัสนี้ เช่น 0000+1234 ต้องขึ้นต้นด้วย 0 (รหัสบ้านไม่มีทางขึ้นต้นด้วย 0)',
+  'v.commonAreaCode': 'ตัวเลข 1-6 หลัก ขึ้นต้นด้วย 0 เช่น 0000',
+
+  // access edit
+  'acc.editVehicle': 'แก้ไขรถ {x}',
+  'acc.vehicleUpdated': 'บันทึกรถแล้ว',
+  'acc.editCred': 'แก้ไข {x} (ตัวรหัสแก้ไม่ได้)',
+  'acc.credUpdated': 'บันทึกแล้ว',
+  'acc.keepDuration': 'คงเดิม',
+
+  // reports
+  'nav.reports': 'รายงาน',
+  'rep.desc':
+    'การเข้าออกตามช่วงวันที่: ผ่าน / ไม่ผ่าน แยกตามวิธี และดาวน์โหลดเป็น CSV (เปิดใน Excel ได้)',
+  'rep.export': 'ดาวน์โหลด CSV',
+  'rep.from': 'ตั้งแต่วันที่',
+  'rep.to': 'ถึงวันที่',
+  'rep.all': 'ทั้งหมด',
+  'rep.total': 'ทั้งหมด',
+  'rep.search': 'ค้นหาทะเบียน บ้าน ชื่อ...',
+  'rep.capped':
+    'แสดงเฉพาะ {n} รายการล่าสุด: เลือกช่วงวันที่ให้แคบลงเพื่อดูทั้งหมด',
+  'log.reason': 'เหตุผล',
 }

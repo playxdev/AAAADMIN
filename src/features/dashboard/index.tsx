@@ -13,6 +13,7 @@ import { Skeleton } from '@/components/ui/skeleton'
 import { Page } from '@/components/layout/page'
 import { useHouses } from '@/features/houses/data'
 import { useVisitors } from '@/features/visitors/data'
+import { AccessLogCard } from './access-log'
 
 function Stat({
   title,
@@ -93,6 +94,7 @@ export function Dashboard() {
           error={visitors.error}
         />
       </div>
+      <AccessLogCard />
     </Page>
   )
 }

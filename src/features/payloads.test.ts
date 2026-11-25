@@ -97,14 +97,13 @@ describe('access', () => {
         province: '',
         brand: 'Toyota',
         color: '',
-        label: ' รถพ่อ ',
+        label: 'รถพ่อ',
       })
     ).toEqual({
       license_plate: 'กข 1234',
       province: undefined,
       brand: 'Toyota',
       color: undefined,
-      label: 'รถพ่อ',
     })
   })
   it('splits stored plates and validates category + number', () => {
@@ -133,7 +132,6 @@ describe('access', () => {
         value: '12a4',
         duration: '1d',
         valid_until: '',
-        label: '',
       }).success
     ).toBe(false)
     expect(
@@ -142,7 +140,6 @@ describe('access', () => {
         value: '123456',
         duration: '1d',
         valid_until: '',
-        label: '',
       }).success
     ).toBe(false)
     for (const value of ['', '1234'])
@@ -152,7 +149,6 @@ describe('access', () => {
           value,
           duration: '1d',
           valid_until: '',
-          label: '',
         }).success
       ).toBe(true)
     expect(
@@ -161,7 +157,6 @@ describe('access', () => {
         value: 'A1B2',
         duration: '1d',
         valid_until: '',
-        label: '',
       }).success
     ).toBe(true)
   })
@@ -170,12 +165,10 @@ describe('access', () => {
       cred_type: 'RFID' as const,
       value: 'A1',
       valid_until: '',
-      label: '',
     }
     expect(toCredentialPayload({ ...v, duration: 'forever' })).toEqual({
       cred_type: 'RFID',
       value: 'A1',
-      label: undefined,
       duration: 'forever',
     })
     expect(
@@ -198,16 +191,24 @@ describe('visitors', () => {
       duration: '7d',
       full_name: '',
       phone_number: '',
-      license_plate: 'ZZ 9',
+      plate_prefix: 'กข',
+      plate_number: '9',
+      province: 'ชลบุรี',
+      brand: 'HONDA',
+      color: '',
       purpose: '',
       issue_code: true,
+      status: 'ACTIVE',
     })
     expect(p).toEqual({
       house_id: undefined,
       duration: '7d',
       full_name: undefined,
       phone_number: undefined,
-      license_plate: 'ZZ 9',
+      license_plate: 'กข 9',
+      province: 'ชลบุรี',
+      brand: 'HONDA',
+      color: undefined,
       purpose: undefined,
       issue_code: true,
     })

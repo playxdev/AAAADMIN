@@ -1,4 +1,4 @@
-# AAAADMIN — Axis Access Auto Admin Panel v2.5.0
+# AAAADMIN — Axis Access Auto Admin Panel v2.5.1
 
 Administrative dashboard for the AAA intelligent residential access management system,
 talking to **AAAAPI** `/api/v1/admin/*` (Cloudflare Worker).
@@ -90,6 +90,13 @@ pnpm test         # needs: pnpm exec playwright install chromium
 - The session (Bearer JWT + admin profile) is stored in a `SameSite=Strict` cookie, with `Secure` on HTTPS. JavaScript can read this cookie, so it can be stolen through XSS. Move to an HttpOnly cookie issued by the API once the backend supports it (App Template Standard §2).
 
 ## Changelog
+
+### v2.5.1
+- Dashboard: latest gate activity (20 rows, refresh every 15 s); Reports page: date range / result / method filters, summary, CSV export (Excel-ready)
+- Edit vehicles (plate, province, brand, colour) and credentials (short name, validity); short names are the house's job (admin can set them in edit mode only)
+- Visitors: vehicle row like houses (category + number + province + brand + colour), edit, status (revoke / re-activate with the same Guest Code)
+- Root project settings: name + common-area code (default `0000`, Guest Code `0000+1234`)
+- Province must be picked from the Thai list; number fields keep digits only (Thai keyboard); Chrome address autofill off on province / brand; sidebar shows the village name only
 
 ### v2.5.0
 - Sign-in: project code as two equal boxes (`PROJ` - `0001`, auto-advance, paste fills both); label "Project / Village / Site Code"

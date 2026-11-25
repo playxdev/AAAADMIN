@@ -17,6 +17,7 @@ import { toast } from 'sonner'
 import { api, apiErrorMessage } from '@/lib/api'
 import { useT } from '@/lib/i18n'
 import type { ContactRole, House, PaymentStatus } from '@/lib/types'
+import { digitsOnly } from '@/lib/utils'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import {
@@ -127,6 +128,7 @@ function HouseDialog({
             <TextField
               control={form.control}
               name='house_code'
+              transform={digitsOnly}
               label={t('houses.f.code')}
               inputMode='numeric'
               maxLength={6}

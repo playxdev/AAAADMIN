@@ -42,11 +42,10 @@ export function ProfileDropdown() {
               <p className='text-sm leading-none font-medium'>{name}</p>
               <p className='text-xs leading-none text-muted-foreground'>
                 {user &&
-                  t('account.project', {
-                    id: [user.projectCode ?? user.projectId, user.projectName]
-                      .filter(Boolean)
-                      .join(' · '),
-                  })}
+                  (user.projectName ??
+                    t('account.project', {
+                      id: user.projectCode ?? user.projectId,
+                    }))}
               </p>
             </div>
           </DropdownMenuLabel>

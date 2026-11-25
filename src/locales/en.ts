@@ -214,7 +214,6 @@ export const en = {
   'vis.new': 'New Visitor',
   'vis.search': 'Search visitors...',
   'vis.newTitle': 'New visitor',
-  'vis.commonAreaOpt': 'Common area (no house)',
   'vis.noHouseCode': '{n} (no house code)',
   'vis.duration': 'Duration',
   'vis.name': 'Name',
@@ -340,4 +339,73 @@ export const en = {
   'pw.contactLine': 'Contact PlayDevX on LINE',
   'api.WRONG_PASSWORD': 'Current password is incorrect',
   'api.PASSWORD_CHANGE_REQUIRED': 'Please set a new password first',
+
+  // access log
+  'log.title': 'Latest gate activity',
+  'log.time': 'Time',
+  'log.direction': 'Direction',
+  'log.entry': 'In',
+  'log.exit': 'Out',
+  'log.method': 'Method',
+  'log.gate': 'Gate',
+  'log.result': 'Result',
+  'log.allowed': 'Allowed',
+  'log.denied': 'Denied',
+  'log.error': 'Error',
+  'reason.RESIDENT_ACTIVE': 'Resident',
+  'reason.RESIDENT_OVERDUE_ALLOWED': 'Resident (overdue)',
+  'reason.VISITOR_VALID': 'Visitor',
+  'reason.RESIDENT_OVERDUE': 'Overdue: method not allowed',
+  'reason.RESIDENT_OVERDUE_SEVERE': 'Severely overdue: PIN only',
+  'reason.METHOD_NOT_ALLOWED': 'Method not allowed',
+  'reason.BLACKLISTED': 'Blacklisted',
+  'reason.UNKNOWN_PLATE': 'Unknown plate',
+  'reason.UNKNOWN_CREDENTIAL': 'Unknown card / code',
+  'reason.CREDENTIAL_REVOKED': 'Revoked',
+  'reason.CREDENTIAL_NOT_YET_VALID': 'Not valid yet',
+  'reason.CREDENTIAL_EXPIRED': 'Expired',
+  'reason.CREDENTIAL_USED_UP': 'Used up',
+  'reason.USER_INACTIVE': 'House disabled',
+  'reason.HOUSE_VACANT': 'House vacant',
+  'reason.VISITOR_NOT_VALID': 'Visitor pass not valid',
+  'reason.PLATE_AMBIGUOUS': 'Same plate in several provinces',
+  'reason.HOUSE_MISMATCH': 'Wrong house',
+  'reason.TOO_MANY_ATTEMPTS': 'Too many wrong codes',
+  'reason.INTERNAL_ERROR': 'System error',
+
+  // visitors edit
+  'vis.statusActive': 'Active',
+  'vis.editTitle': 'Edit visitor',
+  'vis.updated': 'Visitor updated',
+  'v.province': 'Pick a province from the list (in Thai).',
+  'vis.commonAreaOpt': 'Common area (no house)',
+
+  // project master
+  'proj.editTitle': 'Project settings',
+  'proj.updated': 'Project updated',
+  'proj.commonAreaCode': 'Common-area code',
+  'proj.commonAreaHint':
+    'Guest Codes for the common area start with this code, e.g. 0000+1234. Must start with 0 (house codes never do).',
+  'v.commonAreaCode': '1-6 digits starting with 0, e.g. 0000.',
+
+  // access edit
+  'acc.editVehicle': 'Edit vehicle {x}',
+  'acc.vehicleUpdated': 'Vehicle updated',
+  'acc.editCred': 'Edit {x} (the code itself cannot change)',
+  'acc.credUpdated': 'Saved',
+  'acc.keepDuration': 'Keep current',
+
+  // reports
+  'nav.reports': 'Reports',
+  'rep.desc':
+    'Gate activity by date range: allowed / denied, by method, export to CSV (Excel).',
+  'rep.export': 'Export CSV',
+  'rep.from': 'From',
+  'rep.to': 'To',
+  'rep.all': 'All',
+  'rep.total': 'All events',
+  'rep.search': 'Search plate, house, name...',
+  'rep.capped':
+    'Showing the latest {n} events only: narrow the date range to see all.',
+  'log.reason': 'Reason',
 }

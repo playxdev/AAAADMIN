@@ -69,6 +69,9 @@ export interface Visitor {
   full_name: string | null
   phone_number: string | null
   license_plate: string | null
+  province: string | null
+  brand: string | null
+  color: string | null
   purpose: string | null
   valid_from: string
   valid_until: string
@@ -77,6 +80,21 @@ export interface Visitor {
   is_active: number
   id_status: string
   is_valid_now: number
+}
+
+/** One gate decision (tb_access_log); never contains PIN / QR values. */
+export interface AccessLog {
+  log_id: string
+  timestamp: string
+  access_type: 'ENTRY' | 'EXIT' | null
+  method: 'ANPR' | 'RFID' | 'QRCODE' | 'PIN' | null
+  decision: 'YES' | 'NO' | 'ERROR' | null
+  reason_code: string | null
+  license_plate: string | null
+  house_number: string | null
+  gate_name: string | null
+  cred_type: string | null
+  credential_label: string | null
 }
 
 export interface VisitorCreated {
@@ -108,6 +126,8 @@ export interface Project {
   project_id: string
   project_code: string
   project_name: string
+  /** Guest Code prefix for the common area (no house), e.g. 0000. */
+  common_area_code: string | null
   is_active: number
   houses: number
   admins: number

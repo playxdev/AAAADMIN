@@ -1,4 +1,10 @@
-import { Building2, Home, LayoutDashboard, UserCheck } from 'lucide-react'
+import {
+  Building2,
+  FileBarChart,
+  Home,
+  LayoutDashboard,
+  UserCheck,
+} from 'lucide-react'
 import { type SidebarData } from '../types'
 
 /** Nav groups for this user: ROOT also sees root-only items. */
@@ -19,6 +25,7 @@ export const sidebarData: SidebarData = {
       items: [
         { title: 'nav.houses', url: '/houses', icon: Home },
         { title: 'nav.visitors', url: '/visitors', icon: UserCheck },
+        { title: 'nav.reports', url: '/reports', icon: FileBarChart },
         {
           title: 'nav.projects',
           url: '/projects',

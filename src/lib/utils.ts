@@ -100,3 +100,17 @@ export function normalizeProjectCode(v: string): string | null {
     ? `${c.slice(0, 4)}-${c.slice(4)}`
     : null
 }
+
+// Thai digits ๐-๙ -> 0-9 (Thai keyboards / numpads can produce them).
+const arabicDigits = (v: string) =>
+  v.replace(/[๐-๙]/g, (d) => String(d.charCodeAt(0) - 0x0e50))
+
+/**
+ * Digits only. On a Thai layout the number row types Thai letters and the
+ * nearly invisible vowels ุ ึ (keys 6 / 7), which used to fill maxLength.
+ */
+export const digitsOnly = (v: string) => arabicDigits(v).replace(/\D/g, '')
+
+/** Plate category: digits + Thai consonants only (no vowels / tone marks / spaces). */
+export const plateCategoryChars = (v: string) =>
+  arabicDigits(v).replace(/[^0-9ก-ฮ]/g, '')

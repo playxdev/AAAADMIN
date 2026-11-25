@@ -12,6 +12,7 @@ import {
   Loader2,
   Plus,
   Power,
+  Settings,
   UserCog,
 } from 'lucide-react'
 import { toast } from 'sonner'
@@ -45,6 +46,8 @@ const codeField = z
 const projectSchema = z.object({
   project_code: codeField,
   project_name: z.string().trim().min(1, k('v.projectName')).max(128),
+  // Same rule as AAAAPI: starts with 0, so it never clashes with a house code.
+  common_area_code: z.string().regex(/^0\d{0,5}$/, k('v.commonAreaCode')),
 })
 
 const adminSchema = z.object({
@@ -61,21 +64,42 @@ const randomPassword = () =>
     (b) => PW_ALPHABET[b % PW_ALPHABET.length]
   ).join('')
 
-function ProjectDialog({ onClose }: { onClose: () => void }) {
+/** New project, or the project master (name + common-area code) when project is set. */
+function ProjectDialog({
+  project,
+  onClose,
+}: {
+  project?: Project
+  onClose: () => void
+}) {
   const t = useT()
   const queryClient = useQueryClient()
   const form = useForm<z.input<typeof projectSchema>>({
     resolver: zodResolver(projectSchema),
-    defaultValues: { project_code: '', project_name: '' },
+    defaultValues: {
+      project_code: project?.project_code ?? '',
+      project_name: project?.project_name ?? '',
+      common_area_code: project?.common_area_code ?? '0000',
+    },
   })
   const save = useMutation({
-    mutationFn: (v: z.input<typeof projectSchema>) =>
-      api.post('/projects', {
-        project_code: normalizeProjectCode(v.project_code),
+    mutationFn: async (v: z.input<typeof projectSchema>) => {
+      const body = {
         project_name: v.project_name.trim(),
-      }),
+        common_area_code: v.common_area_code,
+      }
+      if (project)
+        return api.patch(
+          `/projects/${encodeURIComponent(project.project_code)}`,
+          body
+        )
+      return api.post('/projects', {
+        project_code: normalizeProjectCode(v.project_code),
+        ...body,
+      })
+    },
     onSuccess: () => {
-      toast.success(t('proj.created'))
+      toast.success(t(project ? 'proj.updated' : 'proj.created'))
       queryClient.invalidateQueries({ queryKey: ['projects'] })
       onClose()
     },
@@ -86,7 +110,8 @@ function ProjectDialog({ onClose }: { onClose: () => void }) {
       <DialogContent className='sm:max-w-md'>
         <DialogHeader>
           <DialogTitle className='flex items-center gap-2'>
-            <Building2 className='size-5' /> {t('proj.new')}
+            <Building2 className='size-5' />{' '}
+            {t(project ? 'proj.editTitle' : 'proj.new')}
           </DialogTitle>
         </DialogHeader>
         <Form {...form}>
@@ -100,6 +125,7 @@ function ProjectDialog({ onClose }: { onClose: () => void }) {
               name='project_code'
               label={t('auth.projectCode')}
               required
+              disabled={!!project}
               maxLength={10}
               className='font-mono uppercase'
               placeholder={t('auth.projectCodePh')}
@@ -112,6 +138,20 @@ function ProjectDialog({ onClose }: { onClose: () => void }) {
               maxLength={128}
               placeholder={t('proj.ph.name')}
             />
+            <div className='space-y-1'>
+              <TextField
+                control={form.control}
+                name='common_area_code'
+                label={t('proj.commonAreaCode')}
+                required
+                inputMode='numeric'
+                maxLength={6}
+                className='font-mono'
+              />
+              <p className='text-xs text-muted-foreground'>
+                {t('proj.commonAreaHint')}
+              </p>
+            </div>
           </form>
         </Form>
         <DialogFooter>
@@ -121,11 +161,11 @@ function ProjectDialog({ onClose }: { onClose: () => void }) {
           <Button
             type='submit'
             form='project-form'
-            variant='success'
+            variant={project ? 'default' : 'success'}
             disabled={save.isPending}
           >
             {save.isPending && <Loader2 className='animate-spin' />}
-            {t('common.create')}
+            {t(project ? 'common.update' : 'common.create')}
           </Button>
         </DialogFooter>
       </DialogContent>
@@ -286,6 +326,7 @@ export function Projects() {
       api.get<{ admins: AdminAccount[] }>('/admins').then((r) => r.data.admins),
   })
   const [dialog, setDialog] = useState<'project' | 'admin'>()
+  const [editing, setEditing] = useState<Project>()
   const [disabling, setDisabling] = useState<AdminAccount>()
   const [resetting, setResetting] = useState<AdminAccount>()
   // One-time password from the last reset (shown once, then handed over).
@@ -329,6 +370,15 @@ export function Projects() {
         ),
       },
       { accessorKey: 'project_name', header: t('proj.name') },
+      {
+        accessorKey: 'common_area_code',
+        header: t('proj.commonAreaCode'),
+        cell: ({ row }) => (
+          <span className='font-mono text-sm'>
+            {row.original.common_area_code ?? '-'}
+          </span>
+        ),
+      },
       { accessorKey: 'houses', header: t('nav.houses') },
       { accessorKey: 'admins', header: t('proj.admins') },
       {
@@ -336,7 +386,16 @@ export function Projects() {
         header: () => <span className='sr-only'>{t('common.actions')}</span>,
         enableHiding: false,
         cell: ({ row }) => (
-          <div className='flex justify-end'>
+          <div className='flex justify-end gap-1'>
+            <Button
+              variant='ghost'
+              size='icon'
+              aria-label={t('proj.editTitle')}
+              title={t('proj.editTitle')}
+              onClick={() => setEditing(row.original)}
+            >
+              <Settings />
+            </Button>
             <Button
               variant='outline'
               size='sm'
@@ -457,6 +516,12 @@ export function Projects() {
       />
       {dialog === 'project' && (
         <ProjectDialog onClose={() => setDialog(undefined)} />
+      )}
+      {editing && (
+        <ProjectDialog
+          project={editing}
+          onClose={() => setEditing(undefined)}
+        />
       )}
       {dialog === 'admin' && (
         <AdminDialog

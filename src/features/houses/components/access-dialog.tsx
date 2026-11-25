@@ -10,6 +10,7 @@ import {
   KeyRound,
   Loader2,
   MessageCircle,
+  Pencil,
   Plus,
   Trash2,
   TriangleAlert,
@@ -17,7 +18,8 @@ import {
 import { toast } from 'sonner'
 import { api, apiErrorMessage } from '@/lib/api'
 import { type TKey, useT } from '@/lib/i18n'
-import { cn, fmtUtc } from '@/lib/utils'
+import type { Credential, Vehicle } from '@/lib/types'
+import { cn, digitsOnly, fmtUtc, plateCategoryChars } from '@/lib/utils'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import {
@@ -43,9 +45,12 @@ import {
   toVehiclePayload,
   useHouse,
   formatPlate,
+  splitPlate,
   vehicleSchema,
 } from '../access-data'
-import { BRANDS, COLORS, PROVINCES } from '../vehicle-options'
+import { BRANDS, PROVINCES } from '../vehicle-options'
+import { useColorItems } from './color-items'
+import { CredentialEditForm } from './credential-edit-form'
 
 // shortcut: plain 4 random digits; the house-number prefix format is pending with SEMA.
 // PIN is unique per project (API returns CREDENTIAL_EXISTS on a clash), so just roll again.
@@ -63,6 +68,7 @@ export function AccessDialog({
   onOpenChange: (open: boolean) => void
 }) {
   const t = useT()
+  const colorItems = useColorItems()
   const queryClient = useQueryClient()
   const detail = useHouse(houseId)
   const [removing, setRemoving] = useState<Removal>()
@@ -95,15 +101,48 @@ export function AccessDialog({
       value: '',
       duration: defaultDuration('RFID'),
       valid_until: '',
-      label: '',
     },
   })
 
+  // Vehicle being edited in the form below the list (undefined = add mode).
+  const [editingVehicle, setEditingVehicle] = useState<Vehicle>()
+  const [editingCred, setEditingCred] = useState<Credential>()
+  const vehicleDefaults = {
+    plate_prefix: '',
+    plate_number: '',
+    province: '',
+    brand: '',
+    color: '',
+    label: '',
+  }
+  const editVehicle = (v: Vehicle) => {
+    const [plate_prefix, plate_number] = splitPlate(v.license_plate)
+    setEditingVehicle(v)
+    vehicleForm.reset({
+      plate_prefix,
+      plate_number,
+      province: v.province ?? '',
+      brand: v.brand ?? '',
+      color: v.color ?? '',
+      label: v.label ?? '',
+    })
+  }
+  const stopEditingVehicle = () => {
+    setEditingVehicle(undefined)
+    vehicleForm.reset(vehicleDefaults)
+  }
   const addVehicle = useMutation({
     mutationFn: (v: z.input<typeof vehicleSchema>) =>
-      api.post(`/houses/${enc}/vehicles`, toVehiclePayload(v)),
+      editingVehicle
+        ? api.patch(
+            `/vehicles/${encodeURIComponent(editingVehicle.vehicle_id)}`,
+            // Empty fields are omitted; the API stores them as empty (whole vehicle is replaced).
+            { ...toVehiclePayload(v), label: v.label.trim() || null }
+          )
+        : api.post(`/houses/${enc}/vehicles`, toVehiclePayload(v)),
     onSuccess: () => {
-      vehicleForm.reset()
+      if (editingVehicle) toast.success(t('acc.vehicleUpdated'))
+      stopEditingVehicle()
       refresh()
     },
     onError,
@@ -141,7 +180,6 @@ export function AccessDialog({
         value: v.cred_type === 'QRCODE' ? v.value : '',
         duration: defaultDuration(v.cred_type),
         valid_until: '',
-        label: '',
       })
       refresh()
     },
@@ -198,6 +236,8 @@ export function AccessDialog({
         if (!o) {
           setLinkCodes({})
           setPinIssued(undefined)
+          setEditingVehicle(undefined)
+          setEditingCred(undefined)
           setQrValue(undefined)
         }
         onOpenChange(o)
@@ -239,7 +279,11 @@ export function AccessDialog({
                   vehicles.map((v) => (
                     <li
                       key={v.vehicle_id}
-                      className='flex items-center justify-between gap-2 px-3 py-2'
+                      className={cn(
+                        'flex items-center justify-between gap-2 px-3 py-2',
+                        editingVehicle?.vehicle_id === v.vehicle_id &&
+                          'bg-primary/10 ring-1 ring-primary/50 ring-inset'
+                      )}
                     >
                       <span className='font-mono font-medium'>
                         {formatPlate(v.license_plate)}
@@ -259,6 +303,15 @@ export function AccessDialog({
                           .filter(Boolean)
                           .join(' · ') || '-'}
                       </span>
+                      <Button
+                        variant='ghost'
+                        size='icon'
+                        aria-label={t('common.edit')}
+                        disabled={vacant}
+                        onClick={() => editVehicle(v)}
+                      >
+                        <Pencil />
+                      </Button>
                       <Button
                         variant='ghost'
                         size='icon'
@@ -290,11 +343,24 @@ export function AccessDialog({
                     onSubmit={vehicleForm.handleSubmit((v) =>
                       addVehicle.mutate(v)
                     )}
-                    className='grid grid-cols-2 items-start gap-2 md:grid-cols-6'
+                    className={cn(
+                      'grid grid-cols-2 items-start gap-2 md:grid-cols-6',
+                      editingVehicle &&
+                        'rounded-md border border-primary/40 bg-primary/5 p-3'
+                    )}
                   >
+                    {editingVehicle && (
+                      <p className='col-span-full flex items-center gap-2 text-sm font-medium'>
+                        <Pencil className='size-4' />
+                        {t('acc.editVehicle', {
+                          x: formatPlate(editingVehicle.license_plate),
+                        })}
+                      </p>
+                    )}
                     <TextField
                       control={vehicleForm.control}
                       name='plate_prefix'
+                      transform={plateCategoryChars}
                       label={t('acc.platePrefix')}
                       required
                       maxLength={4}
@@ -303,6 +369,7 @@ export function AccessDialog({
                     <TextField
                       control={vehicleForm.control}
                       name='plate_number'
+                      transform={digitsOnly}
                       label={t('acc.plateNumber')}
                       required
                       inputMode='numeric'
@@ -316,6 +383,7 @@ export function AccessDialog({
                         label={t('acc.province')}
                         maxLength={64}
                         list='vehicle-provinces'
+                        autoComplete='aaa-no-autofill'
                       />
                     </div>
                     <datalist id='vehicle-provinces'>
@@ -329,6 +397,7 @@ export function AccessDialog({
                       label={t('acc.brand')}
                       maxLength={64}
                       list='vehicle-brands'
+                      autoComplete='aaa-no-autofill'
                     />
                     <datalist id='vehicle-brands'>
                       {BRANDS.map(([value, th]) => (
@@ -339,37 +408,45 @@ export function AccessDialog({
                       control={vehicleForm.control}
                       name='color'
                       label={t('acc.color')}
-                      items={Object.entries(COLORS).map(([code, hex]) => ({
-                        value: code,
-                        label: (
-                          <span className='flex items-center gap-2'>
-                            <span
-                              className='size-3.5 rounded-full border border-border'
-                              style={{ backgroundColor: hex }}
-                            />
-                            {t(`color.${code}` as TKey)}
-                          </span>
-                        ),
-                      }))}
+                      items={colorItems}
                     />
-                    <div className='md:col-span-2'>
-                      <TextField
-                        control={vehicleForm.control}
-                        name='label'
-                        label={t('acc.label')}
-                        maxLength={32}
-                        placeholder={t('acc.ph.vehicleLabel')}
-                      />
+                    {editingVehicle && (
+                      <div className='md:col-span-2'>
+                        <TextField
+                          control={vehicleForm.control}
+                          name='label'
+                          label={t('acc.label')}
+                          maxLength={32}
+                          placeholder={t('acc.ph.vehicleLabel')}
+                        />
+                      </div>
+                    )}
+                    <div className='col-span-full flex justify-end gap-2'>
+                      {editingVehicle && (
+                        <Button
+                          type='button'
+                          size='sm'
+                          variant='outline'
+                          onClick={stopEditingVehicle}
+                        >
+                          {t('common.cancel')}
+                        </Button>
+                      )}
+                      <Button
+                        type='submit'
+                        size='sm'
+                        variant={editingVehicle ? 'default' : 'success'}
+                        disabled={addVehicle.isPending}
+                      >
+                        {editingVehicle ? (
+                          t('common.update')
+                        ) : (
+                          <>
+                            <Plus /> {t('acc.addVehicle')}
+                          </>
+                        )}
+                      </Button>
                     </div>
-                    <Button
-                      type='submit'
-                      size='sm'
-                      variant='success'
-                      className='col-span-full justify-self-end'
-                      disabled={addVehicle.isPending}
-                    >
-                      <Plus /> {t('acc.addVehicle')}
-                    </Button>
                   </form>
                 </fieldset>
               </Form>
@@ -386,7 +463,11 @@ export function AccessDialog({
                   creds.map((c) => (
                     <li
                       key={c.credential_id}
-                      className='flex items-center justify-between gap-2 px-3 py-2'
+                      className={cn(
+                        'flex items-center justify-between gap-2 px-3 py-2',
+                        editingCred?.credential_id === c.credential_id &&
+                          'bg-primary/10 ring-1 ring-primary/50 ring-inset'
+                      )}
                     >
                       <Badge variant='secondary'>{c.cred_type}</Badge>
                       <span className='flex flex-1 flex-col text-sm'>
@@ -398,6 +479,14 @@ export function AccessDialog({
                             : t('dur.forever')}
                         </span>
                       </span>
+                      <Button
+                        variant='ghost'
+                        size='icon'
+                        aria-label={t('common.edit')}
+                        onClick={() => setEditingCred(c)}
+                      >
+                        <Pencil />
+                      </Button>
                       <Button
                         variant='ghost'
                         size='icon'
@@ -421,8 +510,21 @@ export function AccessDialog({
                   </li>
                 )}
               </ul>
+              {editingCred && (
+                <CredentialEditForm
+                  key={editingCred.credential_id}
+                  credential={editingCred}
+                  onDone={(saved) => {
+                    setEditingCred(undefined)
+                    if (saved) refresh()
+                  }}
+                />
+              )}
               <Form {...credForm}>
-                <fieldset disabled={vacant} className='contents'>
+                <fieldset
+                  disabled={vacant}
+                  className={editingCred ? 'hidden' : 'contents'}
+                >
                   <form
                     onSubmit={credForm.handleSubmit((v) =>
                       addCredential.mutate(v)
@@ -485,6 +587,7 @@ export function AccessDialog({
                               <TextField
                                 control={credForm.control}
                                 name='value'
+                                transform={digitsOnly}
                                 label={t('acc.pinFor', {
                                   code: houseCode || '-',
                                 })}
@@ -541,15 +644,6 @@ export function AccessDialog({
                           required
                         />
                       )}
-                    </div>
-                    <div className='md:col-span-2'>
-                      <TextField
-                        control={credForm.control}
-                        name='label'
-                        label={t('acc.label')}
-                        maxLength={32}
-                        placeholder={t('acc.ph.credLabel')}
-                      />
                     </div>
                     {needsCode && (
                       <p className='col-span-full text-sm text-warning'>

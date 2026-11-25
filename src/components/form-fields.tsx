@@ -30,8 +30,13 @@ export function TextField<T extends FieldValues>({
   name,
   label,
   required,
+  transform,
   ...input
-}: BaseProps<T> & Omit<React.ComponentProps<typeof Input>, 'name'>) {
+}: BaseProps<T> &
+  Omit<React.ComponentProps<typeof Input>, 'name'> & {
+    /** Cleans what is typed / pasted before it reaches the form (e.g. digits only). */
+    transform?: (value: string) => string
+  }) {
   return (
     <FormField
       control={control}
@@ -45,6 +50,11 @@ export function TextField<T extends FieldValues>({
               {...input}
               {...field}
               value={field.value ?? ''}
+              onChange={(e) =>
+                field.onChange(
+                  transform ? transform(e.target.value) : e.target.value
+                )
+              }
             />
           </FormControl>
           <FormMessage />

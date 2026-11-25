@@ -5,6 +5,7 @@ import { k } from '@/lib/i18n'
 import type { HouseDetail } from '@/lib/types'
 import { endOfDayUtc } from '@/lib/utils'
 import { DURATIONS } from '@/features/visitors/data'
+import { PROVINCES } from './vehicle-options'
 
 /** House with its contacts, vehicles and credentials (Access dialog). */
 export function useHouse(id: string | undefined) {
@@ -23,6 +24,12 @@ export const PLATE_PREFIX_RE = /^(\d?[ก-ฮ]{1,3}|\d{2})$/
 const PLATE_SPLIT_RE = /^(\d?[ก-ฮ]{1,3}|\d{2})(\d{1,4})$/
 const isTruckPrefix = (prefix: string) => /^\d{2}$/.test(prefix.trim())
 
+/** Stored "1กข1234" -> ["1กข", "1234"] for the edit form; anything else stays in the category box. */
+export function splitPlate(plate: string): [string, string] {
+  const m = PLATE_SPLIT_RE.exec(plate)
+  return m ? [m[1], m[2]] : [plate, '']
+}
+
 /** Stored "1กข1234" / "701234" -> "1กข 1234" / "70-1234"; anything else as stored. */
 export function formatPlate(plate: string) {
   const m = PLATE_SPLIT_RE.exec(plate)
@@ -40,7 +47,13 @@ export const vehicleSchema = z
     province: z.string().trim().max(64),
     brand: z.string().trim().max(64),
     color: z.string().trim().max(32),
+    // Edit mode only (short names are mainly set by the house in the LINE app).
     label: z.string().trim().max(32),
+  })
+  // Thai plates carry the province in Thai: pick it from the list.
+  .refine((v) => !v.province || PROVINCES.includes(v.province), {
+    message: k('v.province'),
+    path: ['province'],
   })
   // Truck/bus plates (70-1234) always have 4 digits.
   .refine(
@@ -54,7 +67,6 @@ export const credentialSchema = z
     value: z.string().trim().max(256),
     duration: z.enum([...DURATIONS, 'custom']),
     valid_until: z.string(),
-    label: z.string().trim().max(32),
   })
   .refine((v) => v.duration !== 'custom' || v.valid_until !== '', {
     message: k('v.date'),
@@ -78,7 +90,6 @@ export function toVehiclePayload(v: z.input<typeof vehicleSchema>) {
     province: v.province.trim() || undefined,
     brand: v.brand.trim() || undefined,
     color: v.color.trim() || undefined,
-    label: v.label.trim() || undefined,
   }
 }
 
@@ -86,7 +97,6 @@ export function toCredentialPayload(v: z.input<typeof credentialSchema>) {
   return {
     cred_type: v.cred_type,
     value: v.value.trim() || undefined,
-    label: v.label.trim() || undefined,
     ...(v.duration === 'custom'
       ? { valid_until: endOfDayUtc(v.valid_until) }
       : { duration: v.duration }),
