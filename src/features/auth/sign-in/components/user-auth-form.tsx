@@ -22,6 +22,8 @@ import {
 } from '@/components/ui/form'
 import { Input } from '@/components/ui/input'
 import { PasswordInput } from '@/components/password-input'
+import { ProjectCodeInput } from '@/components/project-code-input'
+import { ForgotPassword } from './forgot-password'
 
 const PROJECT_CODE_COOKIE = 'project_code'
 
@@ -74,9 +76,17 @@ export function UserAuthForm({
         projectCode: res.data.project_code,
         projectName: res.data.project_name,
         level: res.data.admin_level,
+        mustChangePassword: res.data.must_change_password,
       })
       toast.success(tNow('auth.welcome', { name: data.admin_name }))
-      navigate({ to: safeRedirect(redirectTo), replace: true })
+      // A root-issued password must be replaced first (the API refuses the rest).
+      if (res.data.must_change_password)
+        navigate({
+          to: '/change-password',
+          search: { redirect: safeRedirect(redirectTo) },
+          replace: true,
+        })
+      else navigate({ to: safeRedirect(redirectTo), replace: true })
     } catch (error) {
       toast.error(apiErrorMessage(error, tNow('err.login')))
     } finally {
@@ -98,13 +108,12 @@ export function UserAuthForm({
             <FormItem>
               <FormLabel>{t('auth.projectCode')}</FormLabel>
               <FormControl>
-                <Input
-                  placeholder={t('auth.projectCodePh')}
-                  autoComplete='organization'
-                  autoCapitalize='characters'
-                  className='font-mono uppercase'
-                  maxLength={10}
-                  {...field}
+                <ProjectCodeInput
+                  value={field.value}
+                  onChange={field.onChange}
+                  onBlur={field.onBlur}
+                  name={field.name}
+                  suffixLabel={t('auth.projectBranch')}
                 />
               </FormControl>
               <FormMessage />
@@ -149,6 +158,7 @@ export function UserAuthForm({
           {isLoading ? <Loader2 className='animate-spin' /> : <LogIn />}
           {t('auth.signIn')}
         </Button>
+        <ForgotPassword />
       </form>
     </Form>
   )

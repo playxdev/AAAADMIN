@@ -15,6 +15,8 @@ export interface AuthUser {
   projectName?: string
   /** ROOT (PlayDevX, every project) or ADMIN (one project). */
   level?: 'ROOT' | 'ADMIN'
+  /** Root created / reset this password: must set a new one before anything else. */
+  mustChangePassword?: boolean
 }
 
 interface Session {

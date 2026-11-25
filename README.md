@@ -1,4 +1,4 @@
-# AAAADMIN — Axis Access Auto Admin Panel v2.4.0
+# AAAADMIN — Axis Access Auto Admin Panel v2.5.0
 
 Administrative dashboard for the AAA intelligent residential access management system,
 talking to **AAAAPI** `/api/v1/admin/*` (Cloudflare Worker).
@@ -90,6 +90,11 @@ pnpm test         # needs: pnpm exec playwright install chromium
 - The session (Bearer JWT + admin profile) is stored in a `SameSite=Strict` cookie, with `Secure` on HTTPS. JavaScript can read this cookie, so it can be stolen through XSS. Move to an HttpOnly cookie issued by the API once the backend supports it (App Template Standard §2).
 
 ## Changelog
+
+### v2.5.0
+- Sign-in: project code as two equal boxes (`PROJ` - `0001`, auto-advance, paste fills both); label "Project / Village / Site Code"
+- Forgot password: dialog pointing to PlayDevX LINE OA (`VITE_SUPPORT_LINE_URL`); root resets an admin password (one-time, shown once)
+- Change password page (account menu); forced after root creates / resets an account (AAAAPI migration `0007`)
 
 ### v2.4.0
 - ROOT (PlayDevX, `PLAY-0013`): Projects page (create project / admin with a random password) and a project switcher in the header (`X-Project-Code`)

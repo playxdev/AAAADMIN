@@ -65,10 +65,14 @@ describe('UserAuthForm', () => {
         project_code: 'PROJ-0001',
         project_name: 'หมู่บ้านทดสอบ',
         admin_level: 'ADMIN',
+        must_change_password: false,
       },
     })
     const screen = await render(<UserAuthForm redirectTo='/visitors' />)
-    await userEvent.fill(screen.getByLabelText('Project Code'), 'proj0001')
+    await userEvent.fill(
+      screen.getByLabelText('Project / Village / Site Code'),
+      'proj0001'
+    )
     await userEvent.fill(screen.getByLabelText('Admin Name'), 'admin')
     await userEvent.fill(screen.getByLabelText('Password'), 'secret')
     await userEvent.click(screen.getByRole('button', { name: 'Sign in' }))
@@ -91,13 +95,17 @@ describe('UserAuthForm', () => {
       projectCode: 'PROJ-0001',
       projectName: 'หมู่บ้านทดสอบ',
       level: 'ADMIN',
+      mustChangePassword: false,
     })
   })
 
   it('stays on the page when login fails', async () => {
     mocks.post.mockRejectedValue(new Error('invalid credentials'))
     const screen = await render(<UserAuthForm />)
-    await userEvent.fill(screen.getByLabelText('Project Code'), 'PROJ-0001')
+    await userEvent.fill(
+      screen.getByLabelText('Project / Village / Site Code'),
+      'PROJ-0001'
+    )
     await userEvent.fill(screen.getByLabelText('Admin Name'), 'admin')
     await userEvent.fill(screen.getByLabelText('Password'), 'wrong')
     await userEvent.click(screen.getByRole('button', { name: 'Sign in' }))

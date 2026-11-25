@@ -101,6 +101,7 @@ export interface AdminLoginResponse {
   project_code: string
   project_name: string
   admin_level: 'ROOT' | 'ADMIN'
+  must_change_password: boolean
 }
 
 export interface Project {

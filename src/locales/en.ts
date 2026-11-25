@@ -238,7 +238,8 @@ export const en = {
   // auth
   'auth.title': 'Admin sign in',
   'auth.desc': 'Sign in with your administrator account.',
-  'auth.projectCode': 'Project Code',
+  'auth.projectCode': 'Project / Village / Site Code',
+  'auth.projectBranch': 'Project branch / number',
   'auth.projectCodePh': 'e.g. PROJ-0001',
   'v.projectCode': '4 letters + 4 letters/digits, e.g. PROJ-0001.',
   'auth.name': 'Admin Name',
@@ -312,4 +313,31 @@ export const en = {
   'api.LIMIT_REACHED': 'Limit reached (20 per house): revoke an old one first',
   'api.HOUSE_CODE_MISSING': 'Set a house code for this house first',
   'api.PROJECT_NOT_FOUND': 'Project not found',
+
+  // password
+  'pw.title': 'Change password',
+  'pw.desc': 'Set a new password for your account.',
+  'pw.forced':
+    'You signed in with a password set by PlayDevX. Set your own password to continue.',
+  'pw.current': 'Current password',
+  'pw.new': 'New password (12+ characters)',
+  'pw.confirm': 'Confirm new password',
+  'pw.save': 'Save new password',
+  'pw.same': 'Use a password different from the current one.',
+  'pw.mismatch': 'Passwords do not match.',
+  'pw.changed': 'Password changed',
+  'pw.reset': 'Reset password',
+  'pw.resetTitle': 'Reset this admin’s password?',
+  'pw.resetDesc':
+    '{name} gets a new one-time password and must change it at the next sign-in. The current password stops working.',
+  'pw.resetDone': 'New password issued',
+  'pw.resetHint':
+    'Shown once. Send it to the admin; they must change it at sign-in.',
+  'pw.forgot': 'Forgot password?',
+  'pw.forgotTitle': 'Forgot password',
+  'pw.forgotDesc':
+    'Contact PlayDevX through LINE OA. We will issue a one-time password, and you set a new one at sign-in.',
+  'pw.contactLine': 'Contact PlayDevX on LINE',
+  'api.WRONG_PASSWORD': 'Current password is incorrect',
+  'api.PASSWORD_CHANGE_REQUIRED': 'Please set a new password first',
 }

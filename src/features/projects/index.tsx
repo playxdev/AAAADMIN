@@ -5,7 +5,15 @@ import { zodResolver } from '@hookform/resolvers/zod'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { useNavigate } from '@tanstack/react-router'
 import { type ColumnDef } from '@tanstack/react-table'
-import { Building2, Dices, Loader2, Plus, Power, UserCog } from 'lucide-react'
+import {
+  Building2,
+  Dices,
+  KeyRound,
+  Loader2,
+  Plus,
+  Power,
+  UserCog,
+} from 'lucide-react'
 import { toast } from 'sonner'
 import { useAuthStore } from '@/stores/auth-store'
 import { api, apiErrorMessage } from '@/lib/api'
@@ -279,6 +287,25 @@ export function Projects() {
   })
   const [dialog, setDialog] = useState<'project' | 'admin'>()
   const [disabling, setDisabling] = useState<AdminAccount>()
+  const [resetting, setResetting] = useState<AdminAccount>()
+  // One-time password from the last reset (shown once, then handed over).
+  const [issued, setIssued] = useState<{
+    admin: AdminAccount
+    password: string
+  }>()
+  const reset = useMutation({
+    mutationFn: (a: AdminAccount) =>
+      api
+        .post<{
+          password: string
+        }>(`/admins/${encodeURIComponent(a.admin_id)}/reset-password`)
+        .then((r) => r.data),
+    onSuccess: (r, a) => {
+      setResetting(undefined)
+      setIssued({ admin: a, password: r.password })
+    },
+    onError: (e) => toast.error(apiErrorMessage(e, t('err.save'))),
+  })
 
   const disable = useMutation({
     mutationFn: (a: AdminAccount) =>
@@ -367,6 +394,15 @@ export function Projects() {
               <Button
                 variant='ghost'
                 size='icon'
+                aria-label={t('pw.reset')}
+                title={t('pw.reset')}
+                onClick={() => setResetting(row.original)}
+              >
+                <KeyRound />
+              </Button>
+              <Button
+                variant='ghost'
+                size='icon'
                 aria-label={t('common.disable')}
                 className='text-warning hover:text-warning'
                 onClick={() => setDisabling(row.original)}
@@ -428,6 +464,52 @@ export function Projects() {
           onClose={() => setDialog(undefined)}
         />
       )}
+      <ConfirmDialog
+        open={!!resetting}
+        onOpenChange={(o) => !o && setResetting(undefined)}
+        title={t('pw.resetTitle')}
+        desc={t('pw.resetDesc', {
+          name: resetting
+            ? `${resetting.admin_name} · ${resetting.project_code}`
+            : '',
+        })}
+        confirmText={t('pw.reset')}
+        warning
+        isLoading={reset.isPending}
+        handleConfirm={() => resetting && reset.mutate(resetting)}
+      />
+      <Dialog open={!!issued} onOpenChange={(o) => !o && setIssued(undefined)}>
+        <DialogContent className='sm:max-w-md'>
+          <DialogHeader>
+            <DialogTitle className='flex items-center gap-2'>
+              <KeyRound className='size-5' /> {t('pw.resetDone')}
+            </DialogTitle>
+          </DialogHeader>
+          {issued && (
+            <div className='space-y-2 text-sm' role='status'>
+              {[
+                [t('auth.projectCode'), issued.admin.project_code],
+                [t('auth.name'), issued.admin.admin_name],
+                [t('auth.password'), issued.password],
+              ].map(([label, value]) => (
+                <p key={label} className='flex items-center gap-2'>
+                  <span className='w-40 text-muted-foreground'>{label}</span>
+                  <span className='font-mono'>{value}</span>
+                  <CopyButton value={value} />
+                </p>
+              ))}
+              <p className='text-xs text-muted-foreground'>
+                {t('pw.resetHint')}
+              </p>
+            </div>
+          )}
+          <DialogFooter>
+            <Button variant='info' onClick={() => setIssued(undefined)}>
+              {t('common.done')}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
       <ConfirmDialog
         open={!!disabling}
         onOpenChange={(o) => !o && setDisabling(undefined)}

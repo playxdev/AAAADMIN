@@ -1,4 +1,5 @@
-import { LogOut } from 'lucide-react'
+import { Link } from '@tanstack/react-router'
+import { KeyRound, LogOut } from 'lucide-react'
 import { useAuthStore } from '@/stores/auth-store'
 import { useT } from '@/lib/i18n'
 import { getDisplayNameInitials as initials } from '@/lib/utils'
@@ -50,6 +51,12 @@ export function ProfileDropdown() {
             </div>
           </DropdownMenuLabel>
           <DropdownMenuSeparator />
+          <DropdownMenuItem asChild>
+            <Link to='/change-password'>
+              <KeyRound />
+              {t('pw.title')}
+            </Link>
+          </DropdownMenuItem>
           <DropdownMenuItem
             className='text-warning focus:text-warning [&_svg]:text-warning!'
             onClick={() => setOpen(true)}
