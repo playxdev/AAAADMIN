@@ -1,5 +1,6 @@
 import { Link } from '@tanstack/react-router'
 import { Menu, X } from 'lucide-react'
+import { useAuthStore } from '@/stores/auth-store'
 import { cn } from '@/lib/utils'
 import {
   SidebarMenu,
@@ -11,6 +12,7 @@ import { Button } from '../ui/button'
 
 export function AppTitle() {
   const { setOpenMobile } = useSidebar()
+  const projectName = useAuthStore((s) => s.auth.user?.projectName)
   return (
     <SidebarMenu>
       <SidebarMenuItem>
@@ -26,7 +28,9 @@ export function AppTitle() {
               className='grid flex-1 text-start text-sm leading-tight'
             >
               <span className='truncate font-bold'>AAA Admin</span>
-              <span className='truncate text-xs'>Axis Access Auto</span>
+              <span className='truncate text-xs'>
+                {projectName ?? 'Axis Access Auto'}
+              </span>
             </Link>
             <ToggleSidebar />
           </div>

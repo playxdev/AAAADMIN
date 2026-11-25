@@ -63,6 +63,8 @@ describe('UserAuthForm', () => {
         token_type: 'Bearer',
         expires_in: 3600,
         project_code: 'PROJ-0001',
+        project_name: 'หมู่บ้านทดสอบ',
+        admin_level: 'ADMIN',
       },
     })
     const screen = await render(<UserAuthForm redirectTo='/visitors' />)
@@ -87,6 +89,8 @@ describe('UserAuthForm', () => {
       fullName: 'admin',
       projectId: 'PRJ-1',
       projectCode: 'PROJ-0001',
+      projectName: 'หมู่บ้านทดสอบ',
+      level: 'ADMIN',
     })
   })
 

@@ -1,6 +1,7 @@
 import { ConfigDrawer } from '@/components/config-drawer'
 import { LangSwitch } from '@/components/lang-switch'
 import { ProfileDropdown } from '@/components/profile-dropdown'
+import { ProjectSwitch } from '@/components/project-switch'
 import { Search } from '@/components/search'
 import { ThemeSwitch } from '@/components/theme-switch'
 import { Header } from './header'
@@ -26,6 +27,7 @@ export function Page({
     <>
       <Header fixed>
         <Search className='me-auto' />
+        <ProjectSwitch />
         <LangSwitch />
         <ThemeSwitch />
         <ConfigDrawer />

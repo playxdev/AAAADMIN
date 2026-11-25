@@ -3,11 +3,13 @@
 export type PaymentStatus = 'NORMAL' | 'OVERDUE' | 'OVERDUE_SEVERE'
 
 export type Occupancy = 'OCCUPIED' | 'VACANT'
-export type ContactRole = 'OWNER' | 'RESIDENT' | 'TENANT'
+export type ContactRole = 'OWNER' | 'FAMILY' | 'RESIDENT' | 'TENANT'
 
 /** House contact (tb_user): owner / resident / tenant, optionally linked to LINE. */
 export interface Contact {
   user_id: string
+  /** Readable id, unique system-wide, e.g. PROJ-0001-9806-01. */
+  ref: string | null
   house_id: string
   full_name: string
   phone_number: string | null
@@ -34,12 +36,17 @@ export interface Vehicle {
   province: string | null
   brand: string | null
   color: string | null
+  label: string | null
   is_active: number
 }
 
 export interface Credential {
   credential_id: string
   cred_type: 'RFID' | 'QRCODE' | 'PIN'
+  label: string | null
+  /** ADMIN = admin / root; OWNER = a house member (issued_by_id = their user_id). */
+  issued_by_type: 'ADMIN' | 'OWNER' | null
+  issued_by_id: string | null
   valid_from: string | null
   valid_until: string | null
   max_uses: number | null
@@ -92,4 +99,25 @@ export interface AdminLoginResponse {
   expires_in: number
   /** Canonical project code, e.g. PROJ-0001. */
   project_code: string
+  project_name: string
+  admin_level: 'ROOT' | 'ADMIN'
+}
+
+export interface Project {
+  project_id: string
+  project_code: string
+  project_name: string
+  is_active: number
+  houses: number
+  admins: number
+}
+
+export interface AdminAccount {
+  admin_id: string
+  ref: string | null
+  admin_name: string
+  admin_level: 'ROOT' | 'ADMIN'
+  is_active: number
+  project_code: string
+  project_name: string
 }

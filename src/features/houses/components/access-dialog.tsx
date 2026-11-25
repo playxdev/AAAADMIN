@@ -70,6 +70,8 @@ export function AccessDialog({
   const [linkCodes, setLinkCodes] = useState<Record<string, string>>({})
   // QR code saved by the last add (shown bright with a copy button).
   const [qrValue, setQrValue] = useState<string>()
+  // PIN saved by the last add (house code + 4 digits), shown once.
+  const [pinIssued, setPinIssued] = useState<string>()
   const enc = encodeURIComponent(houseId ?? '')
   // ['houses'] also refreshes the list (contacts / counts).
   const refresh = () => queryClient.invalidateQueries({ queryKey: ['houses'] })
@@ -83,6 +85,7 @@ export function AccessDialog({
       province: '',
       brand: '',
       color: '',
+      label: '',
     },
   })
   const credForm = useForm<z.input<typeof credentialSchema>>({
@@ -92,6 +95,7 @@ export function AccessDialog({
       value: '',
       duration: defaultDuration('RFID'),
       valid_until: '',
+      label: '',
     },
   })
 
@@ -128,14 +132,16 @@ export function AccessDialog({
     // QRCODE: the generated value is returned only once.
     // A new QR value starts scrambling again until the API answers.
     onSuccess: (r, v) => {
-      setQrValue(r.value)
+      // QR: the form keeps the 20-char part, the API returns house code + it.
+      setQrValue(v.cred_type === 'QRCODE' ? v.value : undefined)
+      setPinIssued(v.cred_type === 'PIN' ? r.value : undefined)
       // Keep the chosen type so a generated QR value stays on screen.
       credForm.reset({
         cred_type: v.cred_type,
-        // QR: keep the saved code on screen; other types start empty.
-        value: r.value ?? '',
+        value: v.cred_type === 'QRCODE' ? v.value : '',
         duration: defaultDuration(v.cred_type),
         valid_until: '',
+        label: '',
       })
       refresh()
     },
@@ -170,6 +176,17 @@ export function AccessDialog({
 
   const d = detail.data
   const vacant = d?.occupancy_status === 'VACANT'
+  // PIN / QR start with the house code; a house without one cannot have them.
+  const houseCode = d?.house_code ?? ''
+  const needsCode = (credType === 'PIN' || credType === 'QRCODE') && !houseCode
+  const issuer = (c: {
+    issued_by_type: string | null
+    issued_by_id: string | null
+  }) =>
+    c.issued_by_type === 'OWNER'
+      ? (d?.contacts.find((p) => p.user_id === c.issued_by_id)?.full_name ??
+        t('acc.byMember'))
+      : t('acc.byAdmin')
   const main = d?.contacts[0]
   const vehicles = d?.vehicles.filter((v) => v.is_active) ?? []
   const creds = d?.credentials.filter((c) => c.is_active) ?? []
@@ -180,6 +197,7 @@ export function AccessDialog({
       onOpenChange={(o) => {
         if (!o) {
           setLinkCodes({})
+          setPinIssued(undefined)
           setQrValue(undefined)
         }
         onOpenChange(o)
@@ -226,6 +244,11 @@ export function AccessDialog({
                       <span className='font-mono font-medium'>
                         {formatPlate(v.license_plate)}
                       </span>
+                      {v.label && (
+                        <Badge variant='outline' className='font-normal'>
+                          {v.label}
+                        </Badge>
+                      )}
                       <span className='flex-1 text-sm text-muted-foreground'>
                         {[
                           v.province,
@@ -329,6 +352,15 @@ export function AccessDialog({
                         ),
                       }))}
                     />
+                    <div className='md:col-span-2'>
+                      <TextField
+                        control={vehicleForm.control}
+                        name='label'
+                        label={t('acc.label')}
+                        maxLength={32}
+                        placeholder={t('acc.ph.vehicleLabel')}
+                      />
+                    </div>
                     <Button
                       type='submit'
                       size='sm'
@@ -357,11 +389,14 @@ export function AccessDialog({
                       className='flex items-center justify-between gap-2 px-3 py-2'
                     >
                       <Badge variant='secondary'>{c.cred_type}</Badge>
-                      <span className='flex-1 text-sm'>
-                        {fmtUtc(c.valid_from)} →{' '}
-                        {c.valid_until
-                          ? fmtUtc(c.valid_until)
-                          : t('dur.forever')}
+                      <span className='flex flex-1 flex-col text-sm'>
+                        <span className='font-medium'>{c.label ?? '-'}</span>
+                        <span className='text-xs text-muted-foreground'>
+                          {issuer(c)} · {fmtUtc(c.valid_from)} →{' '}
+                          {c.valid_until
+                            ? fmtUtc(c.valid_until)
+                            : t('dur.forever')}
+                        </span>
                       </span>
                       <Button
                         variant='ghost'
@@ -372,7 +407,7 @@ export function AccessDialog({
                           setRemoving({
                             kind: 'credential',
                             id: c.credential_id,
-                            label: c.cred_type,
+                            label: c.label ?? c.cred_type,
                           })
                         }
                       >
@@ -416,8 +451,15 @@ export function AccessDialog({
                                   : 'bg-muted/30'
                               )}
                             >
-                              {draft && <ScrambleCode value={draft} />}
-                              {saved && <CopyButton value={draft} />}
+                              <span>
+                                <span className='text-muted-foreground'>
+                                  {houseCode}
+                                </span>
+                                {draft && <ScrambleCode value={draft} />}
+                              </span>
+                              {saved && (
+                                <CopyButton value={houseCode + draft} />
+                              )}
                             </div>
                             <Button
                               type='button'
@@ -439,13 +481,26 @@ export function AccessDialog({
                       ) : (
                         <div className='flex items-start gap-1'>
                           <div className='flex-1'>
-                            <TextField
-                              control={credForm.control}
-                              name='value'
-                              label={t('acc.value')}
-                              required
-                              maxLength={256}
-                            />
+                            {credType === 'PIN' ? (
+                              <TextField
+                                control={credForm.control}
+                                name='value'
+                                label={t('acc.pinFor', {
+                                  code: houseCode || '-',
+                                })}
+                                inputMode='numeric'
+                                maxLength={4}
+                                placeholder={t('acc.ph.pin')}
+                              />
+                            ) : (
+                              <TextField
+                                control={credForm.control}
+                                name='value'
+                                label={t('acc.value')}
+                                required
+                                maxLength={256}
+                              />
+                            )}
                           </div>
                           {credType === 'PIN' && (
                             <Button
@@ -487,12 +542,36 @@ export function AccessDialog({
                         />
                       )}
                     </div>
+                    <div className='md:col-span-2'>
+                      <TextField
+                        control={credForm.control}
+                        name='label'
+                        label={t('acc.label')}
+                        maxLength={32}
+                        placeholder={t('acc.ph.credLabel')}
+                      />
+                    </div>
+                    {needsCode && (
+                      <p className='col-span-full text-sm text-warning'>
+                        {t('acc.needsHouseCode')}
+                      </p>
+                    )}
+                    {pinIssued && credType === 'PIN' && (
+                      <p
+                        className='col-span-full flex items-center gap-1 text-sm'
+                        role='status'
+                      >
+                        {t('acc.pinIssued')}
+                        <span className='font-mono text-lg'>{pinIssued}</span>
+                        <CopyButton value={pinIssued} />
+                      </p>
+                    )}
                     <Button
                       type='submit'
                       size='sm'
                       variant='success'
                       className='col-span-full justify-self-end'
-                      disabled={addCredential.isPending}
+                      disabled={addCredential.isPending || needsCode}
                     >
                       <Plus /> {t('acc.addCred')}
                     </Button>
@@ -515,6 +594,11 @@ export function AccessDialog({
                       className='flex flex-wrap items-center gap-2 px-3 py-2'
                     >
                       <span className='font-medium'>{c.full_name}</span>
+                      {c.ref && (
+                        <span className='font-mono text-xs text-muted-foreground'>
+                          {c.ref}
+                        </span>
+                      )}
                       <Badge variant='secondary'>{t(`role.${c.role}`)}</Badge>
                       <span className='flex-1' />
                       {linkCodes[c.user_id] ? (

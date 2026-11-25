@@ -2,6 +2,8 @@ import { create } from 'zustand'
 import { getCookie, setCookie, removeCookie } from '@/lib/cookies'
 
 const AUTH_COOKIE = 'aaa_session'
+// Root only: project being managed (sent as X-Project-Code); empty = root's own project.
+const AS_PROJECT_COOKIE = 'as_project'
 
 export interface AuthUser {
   id: string
@@ -9,6 +11,10 @@ export interface AuthUser {
   projectId: string
   /** e.g. PROJ-0001 (missing in sessions saved before v2.3.0). */
   projectCode?: string
+  /** Village / condo / building name, e.g. หมู่บ้านทดสอบ. */
+  projectName?: string
+  /** ROOT (PlayDevX, every project) or ADMIN (one project). */
+  level?: 'ROOT' | 'ADMIN'
 }
 
 interface Session {
@@ -53,6 +59,8 @@ interface AuthState {
     accessToken: string
     setSession: (token: string, user: AuthUser) => void
     reset: () => void
+    asProject: string
+    setAsProject: (code: string) => void
   }
 }
 
@@ -62,6 +70,12 @@ export const useAuthStore = create<AuthState>()((set) => {
     auth: {
       user: session?.user ?? null,
       accessToken: session?.token ?? '',
+      asProject: getCookie(AS_PROJECT_COOKIE) ?? '',
+      setAsProject: (code) => {
+        if (code) setCookie(AS_PROJECT_COOKIE, code, 60 * 60 * 24 * 30)
+        else removeCookie(AS_PROJECT_COOKIE)
+        set((state) => ({ auth: { ...state.auth, asProject: code } }))
+      },
       setSession: (token, user) => {
         // shortcut: JS-readable cookie because the backend issues a Bearer JWT; move to an HttpOnly cookie set by the API when the backend supports it.
         const maxAge = Math.max(
@@ -77,8 +91,9 @@ export const useAuthStore = create<AuthState>()((set) => {
       },
       reset: () => {
         removeCookie(AUTH_COOKIE)
+        removeCookie(AS_PROJECT_COOKIE)
         set((state) => ({
-          auth: { ...state.auth, user: null, accessToken: '' },
+          auth: { ...state.auth, user: null, accessToken: '', asProject: '' },
         }))
       },
     },

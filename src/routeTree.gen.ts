@@ -12,6 +12,7 @@ import { Route as rootRouteImport } from './routes/__root'
 import { Route as AuthenticatedRouteRouteImport } from './routes/_authenticated/route'
 import { Route as AuthenticatedIndexRouteImport } from './routes/_authenticated/index'
 import { Route as AuthenticatedVisitorsRouteImport } from './routes/_authenticated/visitors'
+import { Route as AuthenticatedProjectsRouteImport } from './routes/_authenticated/projects'
 import { Route as AuthenticatedHousesRouteImport } from './routes/_authenticated/houses'
 import { Route as errors503RouteImport } from './routes/(errors)/503'
 import { Route as errors500RouteImport } from './routes/(errors)/500'
@@ -33,6 +34,11 @@ const AuthenticatedIndexRoute = AuthenticatedIndexRouteImport.update({
 const AuthenticatedVisitorsRoute = AuthenticatedVisitorsRouteImport.update({
   id: '/visitors',
   path: '/visitors',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
+const AuthenticatedProjectsRoute = AuthenticatedProjectsRouteImport.update({
+  id: '/projects',
+  path: '/projects',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
 const AuthenticatedHousesRoute = AuthenticatedHousesRouteImport.update({
@@ -86,6 +92,7 @@ export interface FileRoutesByFullPath {
   '/500': typeof errors500Route
   '/503': typeof errors503Route
   '/houses': typeof AuthenticatedHousesRoute
+  '/projects': typeof AuthenticatedProjectsRoute
   '/visitors': typeof AuthenticatedVisitorsRoute
   '/errors/$error': typeof AuthenticatedErrorsErrorRoute
 }
@@ -97,6 +104,7 @@ export interface FileRoutesByTo {
   '/500': typeof errors500Route
   '/503': typeof errors503Route
   '/houses': typeof AuthenticatedHousesRoute
+  '/projects': typeof AuthenticatedProjectsRoute
   '/visitors': typeof AuthenticatedVisitorsRoute
   '/': typeof AuthenticatedIndexRoute
   '/errors/$error': typeof AuthenticatedErrorsErrorRoute
@@ -111,6 +119,7 @@ export interface FileRoutesById {
   '/(errors)/500': typeof errors500Route
   '/(errors)/503': typeof errors503Route
   '/_authenticated/houses': typeof AuthenticatedHousesRoute
+  '/_authenticated/projects': typeof AuthenticatedProjectsRoute
   '/_authenticated/visitors': typeof AuthenticatedVisitorsRoute
   '/_authenticated/': typeof AuthenticatedIndexRoute
   '/_authenticated/errors/$error': typeof AuthenticatedErrorsErrorRoute
@@ -126,6 +135,7 @@ export interface FileRouteTypes {
     | '/500'
     | '/503'
     | '/houses'
+    | '/projects'
     | '/visitors'
     | '/errors/$error'
   fileRoutesByTo: FileRoutesByTo
@@ -137,6 +147,7 @@ export interface FileRouteTypes {
     | '/500'
     | '/503'
     | '/houses'
+    | '/projects'
     | '/visitors'
     | '/'
     | '/errors/$error'
@@ -150,6 +161,7 @@ export interface FileRouteTypes {
     | '/(errors)/500'
     | '/(errors)/503'
     | '/_authenticated/houses'
+    | '/_authenticated/projects'
     | '/_authenticated/visitors'
     | '/_authenticated/'
     | '/_authenticated/errors/$error'
@@ -186,6 +198,13 @@ declare module '@tanstack/react-router' {
       path: '/visitors'
       fullPath: '/visitors'
       preLoaderRoute: typeof AuthenticatedVisitorsRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/projects': {
+      id: '/_authenticated/projects'
+      path: '/projects'
+      fullPath: '/projects'
+      preLoaderRoute: typeof AuthenticatedProjectsRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
     '/_authenticated/houses': {
@@ -249,6 +268,7 @@ declare module '@tanstack/react-router' {
 
 interface AuthenticatedRouteRouteChildren {
   AuthenticatedHousesRoute: typeof AuthenticatedHousesRoute
+  AuthenticatedProjectsRoute: typeof AuthenticatedProjectsRoute
   AuthenticatedVisitorsRoute: typeof AuthenticatedVisitorsRoute
   AuthenticatedIndexRoute: typeof AuthenticatedIndexRoute
   AuthenticatedErrorsErrorRoute: typeof AuthenticatedErrorsErrorRoute
@@ -256,6 +276,7 @@ interface AuthenticatedRouteRouteChildren {
 
 const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedHousesRoute: AuthenticatedHousesRoute,
+  AuthenticatedProjectsRoute: AuthenticatedProjectsRoute,
   AuthenticatedVisitorsRoute: AuthenticatedVisitorsRoute,
   AuthenticatedIndexRoute: AuthenticatedIndexRoute,
   AuthenticatedErrorsErrorRoute: AuthenticatedErrorsErrorRoute,

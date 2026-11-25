@@ -72,6 +72,8 @@ export function UserAuthForm({
         fullName: data.admin_name,
         projectId: claims.pid,
         projectCode: res.data.project_code,
+        projectName: res.data.project_name,
+        level: res.data.admin_level,
       })
       toast.success(tNow('auth.welcome', { name: data.admin_name }))
       navigate({ to: safeRedirect(redirectTo), replace: true })

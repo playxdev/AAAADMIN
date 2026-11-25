@@ -36,7 +36,11 @@ export function NavUser() {
         <span className='truncate font-semibold'>{name}</span>
         <span className='truncate text-xs'>
           {user &&
-            t('account.project', { id: user.projectCode ?? user.projectId })}
+            t('account.project', {
+              id: [user.projectCode ?? user.projectId, user.projectName]
+                .filter(Boolean)
+                .join(' · '),
+            })}
         </span>
       </div>
     </>

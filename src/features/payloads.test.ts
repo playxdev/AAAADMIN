@@ -97,19 +97,21 @@ describe('access', () => {
         province: '',
         brand: 'Toyota',
         color: '',
+        label: ' รถพ่อ ',
       })
     ).toEqual({
       license_plate: 'กข 1234',
       province: undefined,
       brand: 'Toyota',
       color: undefined,
+      label: 'รถพ่อ',
     })
   })
   it('splits stored plates and validates category + number', () => {
     expect(formatPlate('1กข1234')).toBe('1กข 1234')
     expect(formatPlate('701234')).toBe('70-1234')
     expect(formatPlate('ABC')).toBe('ABC')
-    const v = { province: '', brand: '', color: '' }
+    const v = { province: '', brand: '', color: '', label: '' }
     const ok = (plate_prefix: string, plate_number: string) =>
       vehicleSchema.safeParse({ ...v, plate_prefix, plate_number }).success
     expect(ok('1กข', '1234')).toBe(true)
@@ -124,37 +126,56 @@ describe('access', () => {
     expect(a).toMatch(/^[A-HJ-NP-Z2-9]{20}$/)
     expect(randomQrCode()).not.toBe(a)
   })
-  it('requires a 4-8 digit PIN', () => {
+  it('PIN is empty (generated) or the 4 digits after the house code', () => {
     expect(
       credentialSchema.safeParse({
         cred_type: 'PIN',
         value: '12a4',
         duration: '1d',
         valid_until: '',
+        label: '',
       }).success
     ).toBe(false)
     expect(
       credentialSchema.safeParse({
         cred_type: 'PIN',
-        value: '1234',
+        value: '123456',
         duration: '1d',
         valid_until: '',
+        label: '',
       }).success
-    ).toBe(true)
+    ).toBe(false)
+    for (const value of ['', '1234'])
+      expect(
+        credentialSchema.safeParse({
+          cred_type: 'PIN',
+          value,
+          duration: '1d',
+          valid_until: '',
+          label: '',
+        }).success
+      ).toBe(true)
     expect(
       credentialSchema.safeParse({
         cred_type: 'RFID',
         value: 'A1B2',
         duration: '1d',
         valid_until: '',
+        label: '',
       }).success
     ).toBe(true)
   })
   it('sends duration, or valid_until for a custom date', () => {
-    const v = { cred_type: 'RFID' as const, value: 'A1', valid_until: '' }
+    const v = {
+      cred_type: 'RFID' as const,
+      value: 'A1',
+      valid_until: '',
+      label: '',
+    }
     expect(toCredentialPayload({ ...v, duration: 'forever' })).toEqual({
       cred_type: 'RFID',
       value: 'A1',
+      label: undefined,
       duration: 'forever',
     })
     expect(

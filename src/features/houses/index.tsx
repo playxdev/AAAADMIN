@@ -43,7 +43,7 @@ const PAYMENT_CLASS: Record<PaymentStatus, string> = {
 
 type FormValues = z.input<typeof houseSchema>
 
-const ROLES: ContactRole[] = ['OWNER', 'RESIDENT', 'TENANT']
+const ROLES: ContactRole[] = ['OWNER', 'FAMILY', 'RESIDENT', 'TENANT']
 
 function HouseDialog({
   house,

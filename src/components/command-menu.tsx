@@ -1,6 +1,7 @@
 import React from 'react'
 import { useNavigate } from '@tanstack/react-router'
 import { ArrowRight, ChevronRight, Laptop, Moon, Sun } from 'lucide-react'
+import { useAuthStore } from '@/stores/auth-store'
 import { useT } from '@/lib/i18n'
 import { useSearch } from '@/context/search-provider'
 import { useTheme } from '@/context/theme-provider'
@@ -13,12 +14,13 @@ import {
   CommandList,
   CommandSeparator,
 } from '@/components/ui/command'
-import { sidebarData } from './layout/data/sidebar-data'
+import { navGroupsFor } from './layout/data/sidebar-data'
 import { ScrollArea } from './ui/scroll-area'
 
 export function CommandMenu() {
   const t = useT()
   const navigate = useNavigate()
+  const isRoot = useAuthStore((s) => s.auth.user?.level === 'ROOT')
   const { setTheme } = useTheme()
   const { open, setOpen } = useSearch()
 
@@ -36,7 +38,7 @@ export function CommandMenu() {
       <CommandList>
         <ScrollArea type='hover' className='h-72 pe-1'>
           <CommandEmpty>{t('common.noResultsFound')}</CommandEmpty>
-          {sidebarData.navGroups.map((group) => (
+          {navGroupsFor(isRoot).map((group) => (
             <CommandGroup key={group.title} heading={t(group.title)}>
               {group.items.map((navItem, i) => {
                 if (navItem.url)

@@ -8,8 +8,11 @@ const API_ORIGIN: string = import.meta.env.VITE_API_BASE ?? ''
 export const api = axios.create({ baseURL: `${API_ORIGIN}/api/v1/admin` })
 
 api.interceptors.request.use((config) => {
-  const token = useAuthStore.getState().auth.accessToken
+  const { accessToken: token, user, asProject } = useAuthStore.getState().auth
   if (token) config.headers.Authorization = `Bearer ${token}`
+  // Root manages another project; the API ignores this header for ADMIN.
+  if (user?.level === 'ROOT' && asProject)
+    config.headers['X-Project-Code'] = asProject
   return config
 })
 

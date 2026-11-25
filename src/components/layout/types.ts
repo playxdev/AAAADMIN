@@ -3,6 +3,8 @@ import { type TKey } from '@/lib/i18n'
 
 type BaseNavItem = {
   title: TKey
+  /** Shown only to ROOT (PlayDevX). */
+  rootOnly?: boolean
   badge?: string
   icon?: React.ElementType
 }

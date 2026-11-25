@@ -15,30 +15,38 @@ export function useHouses() {
 // Same rule as AAAAPI HOUSE_CODE_RE: 1-6 digits, no leading zero.
 const HOUSE_CODE_RE = /^[1-9]\d{0,5}$/
 
-export const houseSchema = z.object({
-  house_number: z.string().trim().min(1, k('v.houseNumber')).max(32),
-  house_code: z
-    .string()
-    .trim()
-    .refine((v) => v === '' || HOUSE_CODE_RE.test(v), k('v.houseCode')),
-  zone_or_soi: z.string().trim().max(64),
-  payment_status: z.enum(['NORMAL', 'OVERDUE', 'OVERDUE_SEVERE']),
-  occupancy_status: z.enum(['OCCUPIED', 'VACANT']),
-  contacts: z.array(
-    z
-      .object({
-        user_id: z.string().optional(),
-        full_name: z.string().trim().max(128),
-        phone_number: z.string().trim().max(32),
-        role: z.enum(['OWNER', 'RESIDENT', 'TENANT']),
-      })
-      // A blank row is ignored on save, but a phone needs a name.
-      .refine((c) => c.full_name !== '' || c.phone_number === '', {
-        message: k('v.fullName'),
-        path: ['full_name'],
-      })
-  ),
-})
+export const houseSchema = z
+  .object({
+    house_number: z.string().trim().min(1, k('v.houseNumber')).max(32),
+    house_code: z
+      .string()
+      .trim()
+      .refine((v) => v === '' || HOUSE_CODE_RE.test(v), k('v.houseCode')),
+    zone_or_soi: z.string().trim().max(64),
+    payment_status: z.enum(['NORMAL', 'OVERDUE', 'OVERDUE_SEVERE']),
+    occupancy_status: z.enum(['OCCUPIED', 'VACANT']),
+    contacts: z.array(
+      z
+        .object({
+          user_id: z.string().optional(),
+          full_name: z.string().trim().max(128),
+          phone_number: z.string().trim().max(32),
+          role: z.enum(['OWNER', 'FAMILY', 'RESIDENT', 'TENANT']),
+        })
+        // A blank row is ignored on save, but a phone needs a name.
+        .refine((c) => c.full_name !== '' || c.phone_number === '', {
+          message: k('v.fullName'),
+          path: ['full_name'],
+        })
+    ),
+  })
+  // Same rule as AAAAPI (one OWNER per house).
+  .refine(
+    (v) =>
+      v.contacts.filter((c) => c.full_name.trim() && c.role === 'OWNER')
+        .length <= 1,
+    { message: k('houses.oneOwner'), path: ['contacts'] }
+  )
 
 type ContactRow = z.input<typeof houseSchema>['contacts'][number]
 

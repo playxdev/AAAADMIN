@@ -42,7 +42,9 @@ export function ProfileDropdown() {
               <p className='text-xs leading-none text-muted-foreground'>
                 {user &&
                   t('account.project', {
-                    id: user.projectCode ?? user.projectId,
+                    id: [user.projectCode ?? user.projectId, user.projectName]
+                      .filter(Boolean)
+                      .join(' · '),
                   })}
               </p>
             </div>

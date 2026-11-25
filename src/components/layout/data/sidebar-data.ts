@@ -1,5 +1,12 @@
-import { Home, LayoutDashboard, UserCheck } from 'lucide-react'
+import { Building2, Home, LayoutDashboard, UserCheck } from 'lucide-react'
 import { type SidebarData } from '../types'
+
+/** Nav groups for this user: ROOT also sees root-only items. */
+export const navGroupsFor = (isRoot: boolean) =>
+  sidebarData.navGroups.map((g) => ({
+    ...g,
+    items: g.items.filter((i) => isRoot || !i.rootOnly),
+  }))
 
 export const sidebarData: SidebarData = {
   navGroups: [
@@ -12,6 +19,12 @@ export const sidebarData: SidebarData = {
       items: [
         { title: 'nav.houses', url: '/houses', icon: Home },
         { title: 'nav.visitors', url: '/visitors', icon: UserCheck },
+        {
+          title: 'nav.projects',
+          url: '/projects',
+          icon: Building2,
+          rootOnly: true,
+        },
       ],
     },
   ],
