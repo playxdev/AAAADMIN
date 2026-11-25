@@ -5,7 +5,7 @@ import { zodResolver } from '@hookform/resolvers/zod'
 import { useNavigate } from '@tanstack/react-router'
 import { Loader2, LogIn } from 'lucide-react'
 import { toast } from 'sonner'
-import { useAuthStore } from '@/stores/auth-store'
+import { tokenClaims, useAuthStore } from '@/stores/auth-store'
 import { api, apiErrorMessage } from '@/lib/api'
 import type { AdminLoginRequest, AdminLoginResponse } from '@/lib/types'
 import { cn, safeRedirect } from '@/lib/utils'
@@ -47,13 +47,15 @@ export function UserAuthForm({
   async function onSubmit(data: AdminLoginRequest) {
     setIsLoading(true)
     try {
-      const res = await api.post<AdminLoginResponse>('/auth/admin/login', data)
-      auth.setSession(res.data.token, {
-        id: res.data.admin_id,
-        fullName: res.data.full_name,
-        role: res.data.role,
+      const res = await api.post<AdminLoginResponse>('/login', data)
+      const claims = tokenClaims(res.data.access_token)
+      // The admin JWT carries only sub (admin id) and pid (project id).
+      auth.setSession(res.data.access_token, {
+        id: claims.sub,
+        fullName: data.admin_name,
+        projectId: claims.pid,
       })
-      toast.success(`Welcome back, ${res.data.full_name}!`)
+      toast.success(`Welcome back, ${data.admin_name}!`)
       navigate({ to: safeRedirect(redirectTo), replace: true })
     } catch (error) {
       toast.error(apiErrorMessage(error, 'Login failed'))

@@ -10,7 +10,8 @@ const mocks = vi.hoisted(() => ({
   post: vi.fn(),
 }))
 
-vi.mock('@/stores/auth-store', () => ({
+vi.mock('@/stores/auth-store', async (orig) => ({
+  ...(await orig<typeof import('@/stores/auth-store')>()),
   useAuthStore: () => ({ auth: { setSession: mocks.setSession } }),
 }))
 
@@ -49,33 +50,30 @@ describe('UserAuthForm', () => {
   })
 
   it('logs in, stores the session and redirects', async () => {
+    const b64 = (o: object) => btoa(JSON.stringify(o)).replace(/=+$/, '')
+    const token = `${b64({ alg: 'HS256' })}.${b64({ sub: 'ADM-1', pid: 'PRJ-1', exp: 4e9 })}.sig`
     mocks.post.mockResolvedValue({
-      data: {
-        token: 't',
-        admin_id: 'ADM-1',
-        full_name: 'Admin One',
-        role: 'ADMIN',
-      },
+      data: { access_token: token, token_type: 'Bearer', expires_in: 3600 },
     })
-    const screen = await render(<UserAuthForm redirectTo='/devices' />)
+    const screen = await render(<UserAuthForm redirectTo='/visitors' />)
     await userEvent.fill(screen.getByLabelText('Admin Name'), 'admin')
     await userEvent.fill(screen.getByLabelText('Password'), 'secret')
     await userEvent.click(screen.getByRole('button', { name: 'Sign in' }))
 
     await vi.waitFor(() =>
       expect(mocks.navigate).toHaveBeenCalledWith({
-        to: '/devices',
+        to: '/visitors',
         replace: true,
       })
     )
-    expect(mocks.post).toHaveBeenCalledWith('/auth/admin/login', {
+    expect(mocks.post).toHaveBeenCalledWith('/login', {
       admin_name: 'admin',
       password: 'secret',
     })
-    expect(mocks.setSession).toHaveBeenCalledWith('t', {
+    expect(mocks.setSession).toHaveBeenCalledWith(token, {
       id: 'ADM-1',
-      fullName: 'Admin One',
-      role: 'ADMIN',
+      fullName: 'admin',
+      projectId: 'PRJ-1',
     })
   })
 

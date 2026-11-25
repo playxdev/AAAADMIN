@@ -11,7 +11,7 @@ function jwt(expSeconds: number) {
   return `${b64({ alg: 'HS256' })}.${b64({ exp: expSeconds })}.sig`
 }
 
-const user = { id: 'ADM-1', fullName: 'Somchai Admin', role: 'ADMIN' }
+const user = { id: 'ADM-1', fullName: 'admin', projectId: 'PRJ-1' }
 const nowSec = () => Math.floor(Date.now() / 1000)
 
 describe('useAuthStore', () => {

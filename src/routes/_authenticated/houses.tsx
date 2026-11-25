@@ -1,7 +1,6 @@
 import { createFileRoute } from '@tanstack/react-router'
-import { ResourcePage } from '@/features/resources'
-import { resources } from '@/features/resources/config'
+import { Houses } from '@/features/houses'
 
 export const Route = createFileRoute('/_authenticated/houses')({
-  component: () => <ResourcePage config={resources.houses} />,
+  component: Houses,
 })

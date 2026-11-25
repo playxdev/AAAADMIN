@@ -11,13 +11,9 @@
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as AuthenticatedRouteRouteImport } from './routes/_authenticated/route'
 import { Route as AuthenticatedIndexRouteImport } from './routes/_authenticated/index'
-import { Route as AuthenticatedVehiclesRouteImport } from './routes/_authenticated/vehicles'
-import { Route as AuthenticatedUsersRouteImport } from './routes/_authenticated/users'
-import { Route as AuthenticatedProjectsRouteImport } from './routes/_authenticated/projects'
+import { Route as AuthenticatedVisitorsRouteImport } from './routes/_authenticated/visitors'
+import { Route as AuthenticatedResidentsRouteImport } from './routes/_authenticated/residents'
 import { Route as AuthenticatedHousesRouteImport } from './routes/_authenticated/houses'
-import { Route as AuthenticatedDevicesRouteImport } from './routes/_authenticated/devices'
-import { Route as AuthenticatedBlacklistRouteImport } from './routes/_authenticated/blacklist'
-import { Route as AuthenticatedAccessLogsRouteImport } from './routes/_authenticated/access-logs'
 import { Route as errors503RouteImport } from './routes/(errors)/503'
 import { Route as errors500RouteImport } from './routes/(errors)/500'
 import { Route as errors404RouteImport } from './routes/(errors)/404'
@@ -35,39 +31,19 @@ const AuthenticatedIndexRoute = AuthenticatedIndexRouteImport.update({
   path: '/',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
-const AuthenticatedVehiclesRoute = AuthenticatedVehiclesRouteImport.update({
-  id: '/vehicles',
-  path: '/vehicles',
+const AuthenticatedVisitorsRoute = AuthenticatedVisitorsRouteImport.update({
+  id: '/visitors',
+  path: '/visitors',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
-const AuthenticatedUsersRoute = AuthenticatedUsersRouteImport.update({
-  id: '/users',
-  path: '/users',
-  getParentRoute: () => AuthenticatedRouteRoute,
-} as any)
-const AuthenticatedProjectsRoute = AuthenticatedProjectsRouteImport.update({
-  id: '/projects',
-  path: '/projects',
+const AuthenticatedResidentsRoute = AuthenticatedResidentsRouteImport.update({
+  id: '/residents',
+  path: '/residents',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
 const AuthenticatedHousesRoute = AuthenticatedHousesRouteImport.update({
   id: '/houses',
   path: '/houses',
-  getParentRoute: () => AuthenticatedRouteRoute,
-} as any)
-const AuthenticatedDevicesRoute = AuthenticatedDevicesRouteImport.update({
-  id: '/devices',
-  path: '/devices',
-  getParentRoute: () => AuthenticatedRouteRoute,
-} as any)
-const AuthenticatedBlacklistRoute = AuthenticatedBlacklistRouteImport.update({
-  id: '/blacklist',
-  path: '/blacklist',
-  getParentRoute: () => AuthenticatedRouteRoute,
-} as any)
-const AuthenticatedAccessLogsRoute = AuthenticatedAccessLogsRouteImport.update({
-  id: '/access-logs',
-  path: '/access-logs',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
 const errors503Route = errors503RouteImport.update({
@@ -115,13 +91,9 @@ export interface FileRoutesByFullPath {
   '/404': typeof errors404Route
   '/500': typeof errors500Route
   '/503': typeof errors503Route
-  '/access-logs': typeof AuthenticatedAccessLogsRoute
-  '/blacklist': typeof AuthenticatedBlacklistRoute
-  '/devices': typeof AuthenticatedDevicesRoute
   '/houses': typeof AuthenticatedHousesRoute
-  '/projects': typeof AuthenticatedProjectsRoute
-  '/users': typeof AuthenticatedUsersRoute
-  '/vehicles': typeof AuthenticatedVehiclesRoute
+  '/residents': typeof AuthenticatedResidentsRoute
+  '/visitors': typeof AuthenticatedVisitorsRoute
   '/errors/$error': typeof AuthenticatedErrorsErrorRoute
 }
 export interface FileRoutesByTo {
@@ -131,13 +103,9 @@ export interface FileRoutesByTo {
   '/404': typeof errors404Route
   '/500': typeof errors500Route
   '/503': typeof errors503Route
-  '/access-logs': typeof AuthenticatedAccessLogsRoute
-  '/blacklist': typeof AuthenticatedBlacklistRoute
-  '/devices': typeof AuthenticatedDevicesRoute
   '/houses': typeof AuthenticatedHousesRoute
-  '/projects': typeof AuthenticatedProjectsRoute
-  '/users': typeof AuthenticatedUsersRoute
-  '/vehicles': typeof AuthenticatedVehiclesRoute
+  '/residents': typeof AuthenticatedResidentsRoute
+  '/visitors': typeof AuthenticatedVisitorsRoute
   '/': typeof AuthenticatedIndexRoute
   '/errors/$error': typeof AuthenticatedErrorsErrorRoute
 }
@@ -150,13 +118,9 @@ export interface FileRoutesById {
   '/(errors)/404': typeof errors404Route
   '/(errors)/500': typeof errors500Route
   '/(errors)/503': typeof errors503Route
-  '/_authenticated/access-logs': typeof AuthenticatedAccessLogsRoute
-  '/_authenticated/blacklist': typeof AuthenticatedBlacklistRoute
-  '/_authenticated/devices': typeof AuthenticatedDevicesRoute
   '/_authenticated/houses': typeof AuthenticatedHousesRoute
-  '/_authenticated/projects': typeof AuthenticatedProjectsRoute
-  '/_authenticated/users': typeof AuthenticatedUsersRoute
-  '/_authenticated/vehicles': typeof AuthenticatedVehiclesRoute
+  '/_authenticated/residents': typeof AuthenticatedResidentsRoute
+  '/_authenticated/visitors': typeof AuthenticatedVisitorsRoute
   '/_authenticated/': typeof AuthenticatedIndexRoute
   '/_authenticated/errors/$error': typeof AuthenticatedErrorsErrorRoute
 }
@@ -170,13 +134,9 @@ export interface FileRouteTypes {
     | '/404'
     | '/500'
     | '/503'
-    | '/access-logs'
-    | '/blacklist'
-    | '/devices'
     | '/houses'
-    | '/projects'
-    | '/users'
-    | '/vehicles'
+    | '/residents'
+    | '/visitors'
     | '/errors/$error'
   fileRoutesByTo: FileRoutesByTo
   to:
@@ -186,13 +146,9 @@ export interface FileRouteTypes {
     | '/404'
     | '/500'
     | '/503'
-    | '/access-logs'
-    | '/blacklist'
-    | '/devices'
     | '/houses'
-    | '/projects'
-    | '/users'
-    | '/vehicles'
+    | '/residents'
+    | '/visitors'
     | '/'
     | '/errors/$error'
   id:
@@ -204,13 +160,9 @@ export interface FileRouteTypes {
     | '/(errors)/404'
     | '/(errors)/500'
     | '/(errors)/503'
-    | '/_authenticated/access-logs'
-    | '/_authenticated/blacklist'
-    | '/_authenticated/devices'
     | '/_authenticated/houses'
-    | '/_authenticated/projects'
-    | '/_authenticated/users'
-    | '/_authenticated/vehicles'
+    | '/_authenticated/residents'
+    | '/_authenticated/visitors'
     | '/_authenticated/'
     | '/_authenticated/errors/$error'
   fileRoutesById: FileRoutesById
@@ -241,25 +193,18 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedIndexRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
-    '/_authenticated/vehicles': {
-      id: '/_authenticated/vehicles'
-      path: '/vehicles'
-      fullPath: '/vehicles'
-      preLoaderRoute: typeof AuthenticatedVehiclesRouteImport
+    '/_authenticated/visitors': {
+      id: '/_authenticated/visitors'
+      path: '/visitors'
+      fullPath: '/visitors'
+      preLoaderRoute: typeof AuthenticatedVisitorsRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
-    '/_authenticated/users': {
-      id: '/_authenticated/users'
-      path: '/users'
-      fullPath: '/users'
-      preLoaderRoute: typeof AuthenticatedUsersRouteImport
-      parentRoute: typeof AuthenticatedRouteRoute
-    }
-    '/_authenticated/projects': {
-      id: '/_authenticated/projects'
-      path: '/projects'
-      fullPath: '/projects'
-      preLoaderRoute: typeof AuthenticatedProjectsRouteImport
+    '/_authenticated/residents': {
+      id: '/_authenticated/residents'
+      path: '/residents'
+      fullPath: '/residents'
+      preLoaderRoute: typeof AuthenticatedResidentsRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
     '/_authenticated/houses': {
@@ -267,27 +212,6 @@ declare module '@tanstack/react-router' {
       path: '/houses'
       fullPath: '/houses'
       preLoaderRoute: typeof AuthenticatedHousesRouteImport
-      parentRoute: typeof AuthenticatedRouteRoute
-    }
-    '/_authenticated/devices': {
-      id: '/_authenticated/devices'
-      path: '/devices'
-      fullPath: '/devices'
-      preLoaderRoute: typeof AuthenticatedDevicesRouteImport
-      parentRoute: typeof AuthenticatedRouteRoute
-    }
-    '/_authenticated/blacklist': {
-      id: '/_authenticated/blacklist'
-      path: '/blacklist'
-      fullPath: '/blacklist'
-      preLoaderRoute: typeof AuthenticatedBlacklistRouteImport
-      parentRoute: typeof AuthenticatedRouteRoute
-    }
-    '/_authenticated/access-logs': {
-      id: '/_authenticated/access-logs'
-      path: '/access-logs'
-      fullPath: '/access-logs'
-      preLoaderRoute: typeof AuthenticatedAccessLogsRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
     '/(errors)/503': {
@@ -343,25 +267,17 @@ declare module '@tanstack/react-router' {
 }
 
 interface AuthenticatedRouteRouteChildren {
-  AuthenticatedAccessLogsRoute: typeof AuthenticatedAccessLogsRoute
-  AuthenticatedBlacklistRoute: typeof AuthenticatedBlacklistRoute
-  AuthenticatedDevicesRoute: typeof AuthenticatedDevicesRoute
   AuthenticatedHousesRoute: typeof AuthenticatedHousesRoute
-  AuthenticatedProjectsRoute: typeof AuthenticatedProjectsRoute
-  AuthenticatedUsersRoute: typeof AuthenticatedUsersRoute
-  AuthenticatedVehiclesRoute: typeof AuthenticatedVehiclesRoute
+  AuthenticatedResidentsRoute: typeof AuthenticatedResidentsRoute
+  AuthenticatedVisitorsRoute: typeof AuthenticatedVisitorsRoute
   AuthenticatedIndexRoute: typeof AuthenticatedIndexRoute
   AuthenticatedErrorsErrorRoute: typeof AuthenticatedErrorsErrorRoute
 }
 
 const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
-  AuthenticatedAccessLogsRoute: AuthenticatedAccessLogsRoute,
-  AuthenticatedBlacklistRoute: AuthenticatedBlacklistRoute,
-  AuthenticatedDevicesRoute: AuthenticatedDevicesRoute,
   AuthenticatedHousesRoute: AuthenticatedHousesRoute,
-  AuthenticatedProjectsRoute: AuthenticatedProjectsRoute,
-  AuthenticatedUsersRoute: AuthenticatedUsersRoute,
-  AuthenticatedVehiclesRoute: AuthenticatedVehiclesRoute,
+  AuthenticatedResidentsRoute: AuthenticatedResidentsRoute,
+  AuthenticatedVisitorsRoute: AuthenticatedVisitorsRoute,
   AuthenticatedIndexRoute: AuthenticatedIndexRoute,
   AuthenticatedErrorsErrorRoute: AuthenticatedErrorsErrorRoute,
 }

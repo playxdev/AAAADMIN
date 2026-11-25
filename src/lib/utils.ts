@@ -76,3 +76,16 @@ export function safeRedirect(target?: string) {
     ? target
     : '/'
 }
+
+/** DB timestamps are UTC "YYYY-MM-DD HH:MM:SS"; show them in local time. */
+export function fmtUtc(s: string | null): string {
+  return s ? new Date(s.replace(' ', 'T') + 'Z').toLocaleString() : '-'
+}
+
+/** Local date input (yyyy-mm-dd) -> end of that local day as SQLite UTC "YYYY-MM-DD HH:MM:SS". */
+export function endOfDayUtc(date: string): string {
+  return new Date(`${date}T23:59:59`)
+    .toISOString()
+    .replace('T', ' ')
+    .slice(0, 19)
+}

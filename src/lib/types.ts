@@ -1,21 +1,77 @@
-export interface AccessLog {
-  auto_id: number
-  prefix: string
-  log_id: string
-  project_id: string
-  device_id: string | null
-  license_plate: string | null
-  access_type: string | null
-  user_type: string | null
-  access_date: string
-  image_url: string | null
-  remark: string | null
-  is_success: boolean
-  update_by: string
+// Mirrors AAAAPI /api/v1/admin/* responses (see AAAAPI/src/admin.ts, guest.ts)
+
+export type PaymentStatus = 'NORMAL' | 'OVERDUE' | 'OVERDUE_SEVERE'
+
+export interface House {
+  house_id: string
+  house_number: string
+  house_code: string | null
+  zone_or_soi: string | null
+  payment_status: PaymentStatus
+  is_active: number
   update_date: string
-  is_active: boolean
-  is_delete: boolean
+}
+
+export interface Resident {
+  user_id: string
+  house_id: string | null
+  full_name: string
+  phone_number: string | null
+  line_id: string | null
+  role: string
+  is_active: number
+  update_date: string
+}
+
+export interface Vehicle {
+  vehicle_id: string
+  license_plate: string
+  province: string | null
+  brand: string | null
+  color: string | null
+  is_active: number
+}
+
+export interface Credential {
+  credential_id: string
+  cred_type: 'RFID' | 'QRCODE' | 'PIN'
+  valid_from: string | null
+  valid_until: string | null
+  max_uses: number | null
+  use_count: number
+  is_active: number
   id_status: string
+}
+
+export interface ResidentDetail extends Resident {
+  vehicles: Vehicle[]
+  credentials: Credential[]
+}
+
+export interface Visitor {
+  visitor_id: string
+  house_id: string | null
+  house_number: string | null
+  house_code: string | null
+  full_name: string | null
+  phone_number: string | null
+  license_plate: string | null
+  purpose: string | null
+  valid_from: string
+  valid_until: string
+  issued_by_type: string | null
+  issued_by_id: string | null
+  is_active: number
+  id_status: string
+  is_valid_now: number
+}
+
+export interface VisitorCreated {
+  visitor_id: string
+  valid_from: string
+  valid_until: string
+  credential_id?: string
+  code?: string
 }
 
 export interface AdminLoginRequest {
@@ -24,13 +80,7 @@ export interface AdminLoginRequest {
 }
 
 export interface AdminLoginResponse {
-  token: string
-  admin_id: string
-  full_name: string
-  role: string
-}
-
-export interface ListResponse<T> {
-  data: T[]
-  total: number
+  access_token: string
+  token_type: string
+  expires_in: number
 }
