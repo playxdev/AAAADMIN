@@ -11,6 +11,7 @@ import { IconSidebarSidebar } from '@/assets/custom/icon-sidebar-sidebar'
 import { IconThemeDark } from '@/assets/custom/icon-theme-dark'
 import { IconThemeLight } from '@/assets/custom/icon-theme-light'
 import { IconThemeSystem } from '@/assets/custom/icon-theme-system'
+import { useT } from '@/lib/i18n'
 import { cn } from '@/lib/utils'
 import { useDirection } from '@/context/direction-provider'
 import { type Collapsible, useLayout } from '@/context/layout-provider'
@@ -28,6 +29,7 @@ import {
 import { useSidebar } from './ui/sidebar'
 
 export function ConfigDrawer() {
+  const t = useT()
   const { setOpen } = useSidebar()
   const { resetDir } = useDirection()
   const { resetTheme } = useTheme()
@@ -46,7 +48,7 @@ export function ConfigDrawer() {
         <Button
           size='icon'
           variant='ghost'
-          aria-label='Open theme settings'
+          aria-label={t('cfg.open')}
           className='rounded-full'
         >
           <Settings aria-hidden='true' />
@@ -54,10 +56,8 @@ export function ConfigDrawer() {
       </SheetTrigger>
       <SheetContent className='flex flex-col'>
         <SheetHeader className='pb-0 text-start'>
-          <SheetTitle>Theme Settings</SheetTitle>
-          <SheetDescription>
-            Adjust the appearance and layout to suit your preferences.
-          </SheetDescription>
+          <SheetTitle>{t('cfg.title')}</SheetTitle>
+          <SheetDescription>{t('cfg.desc')}</SheetDescription>
         </SheetHeader>
         <div className='space-y-6 overflow-y-auto px-4'>
           <ThemeConfig />
@@ -67,11 +67,11 @@ export function ConfigDrawer() {
         </div>
         <SheetFooter className='gap-2'>
           <Button
-            variant='destructive'
+            variant='warning'
             onClick={handleReset}
             aria-label='Reset all settings to default values'
           >
-            Reset
+            {t('common.reset')}
           </Button>
         </SheetFooter>
       </SheetContent>
@@ -173,11 +173,12 @@ function RadioGroupItem({
 }
 
 function ThemeConfig() {
+  const t = useT()
   const { defaultTheme, theme, setTheme } = useTheme()
   return (
     <div>
       <SectionTitle
-        title='Theme'
+        title={t('theme.heading')}
         showReset={theme !== defaultTheme}
         onReset={() => setTheme(defaultTheme)}
         resetAriaLabel='Reset theme preference to default'
@@ -192,17 +193,17 @@ function ThemeConfig() {
         {[
           {
             value: 'system',
-            label: 'System',
+            label: t('theme.system'),
             icon: IconThemeSystem,
           },
           {
             value: 'light',
-            label: 'Light',
+            label: t('theme.light'),
             icon: IconThemeLight,
           },
           {
             value: 'dark',
-            label: 'Dark',
+            label: t('theme.dark'),
             icon: IconThemeDark,
           },
         ].map((item) => (
@@ -217,11 +218,12 @@ function ThemeConfig() {
 }
 
 function SidebarConfig() {
+  const t = useT()
   const { defaultVariant, variant, setVariant } = useLayout()
   return (
     <div className='max-md:hidden'>
       <SectionTitle
-        title='Sidebar'
+        title={t('cfg.sidebar')}
         showReset={defaultVariant !== variant}
         onReset={() => setVariant(defaultVariant)}
         resetAriaLabel='Reset sidebar style to default'
@@ -236,17 +238,17 @@ function SidebarConfig() {
         {[
           {
             value: 'inset',
-            label: 'Inset',
+            label: t('cfg.inset'),
             icon: IconSidebarInset,
           },
           {
             value: 'floating',
-            label: 'Floating',
+            label: t('cfg.floating'),
             icon: IconSidebarFloating,
           },
           {
             value: 'sidebar',
-            label: 'Sidebar',
+            label: t('cfg.sidebar'),
             icon: IconSidebarSidebar,
           },
         ].map((item) => (
@@ -261,6 +263,7 @@ function SidebarConfig() {
 }
 
 function LayoutConfig() {
+  const t = useT()
   const { open, setOpen } = useSidebar()
   const { defaultCollapsible, collapsible, setCollapsible } = useLayout()
 
@@ -269,7 +272,7 @@ function LayoutConfig() {
   return (
     <div className='max-md:hidden'>
       <SectionTitle
-        title='Layout'
+        title={t('cfg.layout')}
         showReset={radioState !== 'default'}
         onReset={() => {
           setOpen(true)
@@ -294,17 +297,17 @@ function LayoutConfig() {
         {[
           {
             value: 'default',
-            label: 'Default',
+            label: t('cfg.default'),
             icon: IconLayoutDefault,
           },
           {
             value: 'icon',
-            label: 'Compact',
+            label: t('cfg.compact'),
             icon: IconLayoutCompact,
           },
           {
             value: 'offcanvas',
-            label: 'Full layout',
+            label: t('cfg.full'),
             icon: IconLayoutFull,
           },
         ].map((item) => (
@@ -319,11 +322,12 @@ function LayoutConfig() {
 }
 
 function DirConfig() {
+  const t = useT()
   const { defaultDir, dir, setDir } = useDirection()
   return (
     <div>
       <SectionTitle
-        title='Direction'
+        title={t('cfg.direction')}
         showReset={defaultDir !== dir}
         onReset={() => setDir(defaultDir)}
         resetAriaLabel='Reset text direction to default'
@@ -338,14 +342,14 @@ function DirConfig() {
         {[
           {
             value: 'ltr',
-            label: 'Left to Right',
+            label: t('cfg.ltr'),
             icon: (props: SVGProps<SVGSVGElement>) => (
               <IconDir dir='ltr' {...props} />
             ),
           },
           {
             value: 'rtl',
-            label: 'Right to Left',
+            label: t('cfg.rtl'),
             icon: (props: SVGProps<SVGSVGElement>) => (
               <IconDir dir='rtl' {...props} />
             ),

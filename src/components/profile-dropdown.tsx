@@ -1,5 +1,6 @@
 import { LogOut } from 'lucide-react'
 import { useAuthStore } from '@/stores/auth-store'
+import { useT } from '@/lib/i18n'
 import { getDisplayNameInitials as initials } from '@/lib/utils'
 import useDialogState from '@/hooks/use-dialog-state'
 import { Avatar, AvatarFallback } from '@/components/ui/avatar'
@@ -15,6 +16,7 @@ import {
 import { SignOutDialog } from '@/components/sign-out-dialog'
 
 export function ProfileDropdown() {
+  const t = useT()
   const [open, setOpen] = useDialogState()
   const user = useAuthStore((s) => s.auth.user)
   const name = user?.fullName ?? 'Admin'
@@ -26,7 +28,7 @@ export function ProfileDropdown() {
           <Button
             variant='ghost'
             className='relative h-8 w-8 rounded-full'
-            aria-label='Account menu'
+            aria-label={t('account.menu')}
           >
             <Avatar className='h-8 w-8'>
               <AvatarFallback>{initials(name)}</AvatarFallback>
@@ -38,14 +40,17 @@ export function ProfileDropdown() {
             <div className='flex flex-col gap-1.5'>
               <p className='text-sm leading-none font-medium'>{name}</p>
               <p className='text-xs leading-none text-muted-foreground'>
-                {user && `Project ${user.projectId}`}
+                {user && t('account.project', { id: user.projectId })}
               </p>
             </div>
           </DropdownMenuLabel>
           <DropdownMenuSeparator />
-          <DropdownMenuItem variant='destructive' onClick={() => setOpen(true)}>
+          <DropdownMenuItem
+            className='text-warning focus:text-warning [&_svg]:text-warning!'
+            onClick={() => setOpen(true)}
+          >
             <LogOut />
-            Sign out
+            {t('account.signOut')}
           </DropdownMenuItem>
         </DropdownMenuContent>
       </DropdownMenu>

@@ -12,7 +12,6 @@ import { Route as rootRouteImport } from './routes/__root'
 import { Route as AuthenticatedRouteRouteImport } from './routes/_authenticated/route'
 import { Route as AuthenticatedIndexRouteImport } from './routes/_authenticated/index'
 import { Route as AuthenticatedVisitorsRouteImport } from './routes/_authenticated/visitors'
-import { Route as AuthenticatedResidentsRouteImport } from './routes/_authenticated/residents'
 import { Route as AuthenticatedHousesRouteImport } from './routes/_authenticated/houses'
 import { Route as errors503RouteImport } from './routes/(errors)/503'
 import { Route as errors500RouteImport } from './routes/(errors)/500'
@@ -34,11 +33,6 @@ const AuthenticatedIndexRoute = AuthenticatedIndexRouteImport.update({
 const AuthenticatedVisitorsRoute = AuthenticatedVisitorsRouteImport.update({
   id: '/visitors',
   path: '/visitors',
-  getParentRoute: () => AuthenticatedRouteRoute,
-} as any)
-const AuthenticatedResidentsRoute = AuthenticatedResidentsRouteImport.update({
-  id: '/residents',
-  path: '/residents',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
 const AuthenticatedHousesRoute = AuthenticatedHousesRouteImport.update({
@@ -92,7 +86,6 @@ export interface FileRoutesByFullPath {
   '/500': typeof errors500Route
   '/503': typeof errors503Route
   '/houses': typeof AuthenticatedHousesRoute
-  '/residents': typeof AuthenticatedResidentsRoute
   '/visitors': typeof AuthenticatedVisitorsRoute
   '/errors/$error': typeof AuthenticatedErrorsErrorRoute
 }
@@ -104,7 +97,6 @@ export interface FileRoutesByTo {
   '/500': typeof errors500Route
   '/503': typeof errors503Route
   '/houses': typeof AuthenticatedHousesRoute
-  '/residents': typeof AuthenticatedResidentsRoute
   '/visitors': typeof AuthenticatedVisitorsRoute
   '/': typeof AuthenticatedIndexRoute
   '/errors/$error': typeof AuthenticatedErrorsErrorRoute
@@ -119,7 +111,6 @@ export interface FileRoutesById {
   '/(errors)/500': typeof errors500Route
   '/(errors)/503': typeof errors503Route
   '/_authenticated/houses': typeof AuthenticatedHousesRoute
-  '/_authenticated/residents': typeof AuthenticatedResidentsRoute
   '/_authenticated/visitors': typeof AuthenticatedVisitorsRoute
   '/_authenticated/': typeof AuthenticatedIndexRoute
   '/_authenticated/errors/$error': typeof AuthenticatedErrorsErrorRoute
@@ -135,7 +126,6 @@ export interface FileRouteTypes {
     | '/500'
     | '/503'
     | '/houses'
-    | '/residents'
     | '/visitors'
     | '/errors/$error'
   fileRoutesByTo: FileRoutesByTo
@@ -147,7 +137,6 @@ export interface FileRouteTypes {
     | '/500'
     | '/503'
     | '/houses'
-    | '/residents'
     | '/visitors'
     | '/'
     | '/errors/$error'
@@ -161,7 +150,6 @@ export interface FileRouteTypes {
     | '/(errors)/500'
     | '/(errors)/503'
     | '/_authenticated/houses'
-    | '/_authenticated/residents'
     | '/_authenticated/visitors'
     | '/_authenticated/'
     | '/_authenticated/errors/$error'
@@ -198,13 +186,6 @@ declare module '@tanstack/react-router' {
       path: '/visitors'
       fullPath: '/visitors'
       preLoaderRoute: typeof AuthenticatedVisitorsRouteImport
-      parentRoute: typeof AuthenticatedRouteRoute
-    }
-    '/_authenticated/residents': {
-      id: '/_authenticated/residents'
-      path: '/residents'
-      fullPath: '/residents'
-      preLoaderRoute: typeof AuthenticatedResidentsRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
     '/_authenticated/houses': {
@@ -268,7 +249,6 @@ declare module '@tanstack/react-router' {
 
 interface AuthenticatedRouteRouteChildren {
   AuthenticatedHousesRoute: typeof AuthenticatedHousesRoute
-  AuthenticatedResidentsRoute: typeof AuthenticatedResidentsRoute
   AuthenticatedVisitorsRoute: typeof AuthenticatedVisitorsRoute
   AuthenticatedIndexRoute: typeof AuthenticatedIndexRoute
   AuthenticatedErrorsErrorRoute: typeof AuthenticatedErrorsErrorRoute
@@ -276,7 +256,6 @@ interface AuthenticatedRouteRouteChildren {
 
 const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedHousesRoute: AuthenticatedHousesRoute,
-  AuthenticatedResidentsRoute: AuthenticatedResidentsRoute,
   AuthenticatedVisitorsRoute: AuthenticatedVisitorsRoute,
   AuthenticatedIndexRoute: AuthenticatedIndexRoute,
   AuthenticatedErrorsErrorRoute: AuthenticatedErrorsErrorRoute,

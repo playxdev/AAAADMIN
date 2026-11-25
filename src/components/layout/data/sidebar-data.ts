@@ -1,18 +1,17 @@
-import { Home, LayoutDashboard, UserCheck, Users } from 'lucide-react'
+import { Home, LayoutDashboard, UserCheck } from 'lucide-react'
 import { type SidebarData } from '../types'
 
 export const sidebarData: SidebarData = {
   navGroups: [
     {
-      title: 'Overview',
-      items: [{ title: 'Dashboard', url: '/', icon: LayoutDashboard }],
+      title: 'nav.overview',
+      items: [{ title: 'nav.dashboard', url: '/', icon: LayoutDashboard }],
     },
     {
-      title: 'Management',
+      title: 'nav.management',
       items: [
-        { title: 'Houses', url: '/houses', icon: Home },
-        { title: 'Residents', url: '/residents', icon: Users },
-        { title: 'Visitors', url: '/visitors', icon: UserCheck },
+        { title: 'nav.houses', url: '/houses', icon: Home },
+        { title: 'nav.visitors', url: '/visitors', icon: UserCheck },
       ],
     },
   ],

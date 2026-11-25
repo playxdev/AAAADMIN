@@ -11,6 +11,7 @@ import {
   useReactTable,
 } from '@tanstack/react-table'
 import { Loader2 } from 'lucide-react'
+import { useT } from '@/lib/i18n'
 import { cn } from '@/lib/utils'
 import {
   Table,
@@ -42,6 +43,7 @@ export function DataTable<TData>({
   searchPlaceholder,
   compact,
 }: DataTableProps<TData>) {
+  const t = useT()
   const [sorting, setSorting] = useState<SortingState>([])
   const [globalFilter, setGlobalFilter] = useState('')
   const [columnVisibility, setColumnVisibility] = useState<VisibilityState>({})
@@ -62,11 +64,11 @@ export function DataTable<TData>({
   })
 
   const rows = table.getRowModel().rows
-  let emptyMessage: React.ReactNode = 'No results.'
+  let emptyMessage: React.ReactNode = t('common.noResults')
   if (isLoading)
     emptyMessage = (
       <span className='inline-flex items-center gap-2'>
-        <Loader2 className='size-4 animate-spin' /> Loading...
+        <Loader2 className='size-4 animate-spin' /> {t('common.loading')}
       </span>
     )
   else if (error)

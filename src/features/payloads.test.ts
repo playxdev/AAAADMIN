@@ -1,12 +1,14 @@
 import { describe, expect, it } from 'vitest'
 import { endOfDayUtc, fmtUtc } from '@/lib/utils'
-import { houseSchema, toHousePayload } from '@/features/houses/data'
 import {
   credentialSchema,
   toCredentialPayload,
-  toResidentPayload,
+  formatPlate,
+  randomQrCode,
   toVehiclePayload,
-} from '@/features/residents/data'
+  vehicleSchema,
+} from '@/features/houses/access-data'
+import { houseSchema, toHousePayload } from '@/features/houses/data'
 import {
   COMMON_AREA,
   keypadDigits,
@@ -36,6 +38,8 @@ describe('houses', () => {
     house_code: '',
     zone_or_soi: ' ',
     payment_status: 'OVERDUE' as const,
+    occupancy_status: 'OCCUPIED' as const,
+    contacts: [],
   }
   it('validates house_code like the API', () => {
     expect(houseSchema.safeParse({ ...base, house_code: '0123' }).success).toBe(
@@ -54,6 +58,7 @@ describe('houses', () => {
       house_number: '99/1',
       house_code: null,
       zone_or_soi: null,
+      occupancy_status: 'OCCUPIED',
     })
     expect(toHousePayload(base, true)).toMatchObject({
       payment_status: 'OVERDUE',
@@ -61,29 +66,34 @@ describe('houses', () => {
   })
 })
 
-describe('residents', () => {
-  it('adds is_active only when re-activating', () => {
-    const v = {
-      full_name: 'สมชาย',
-      house_id: 'H1',
-      phone_number: '',
-      line_id: '',
-      reactivate: false,
+describe('house contacts', () => {
+  it('skips blank rows but needs a name when a phone is given', () => {
+    const base = {
+      house_number: '1/1',
+      house_code: '',
+      zone_or_soi: '',
+      payment_status: 'NORMAL' as const,
+      occupancy_status: 'OCCUPIED' as const,
     }
-    expect(toResidentPayload(v)).toEqual({
-      full_name: 'สมชาย',
-      house_id: 'H1',
-      phone_number: null,
-      line_id: null,
+    const row = (full_name: string, phone_number: string) => ({
+      full_name,
+      phone_number,
+      role: 'OWNER' as const,
     })
-    expect(toResidentPayload({ ...v, reactivate: true })).toMatchObject({
-      is_active: true,
-    })
+    const ok = (contacts: ReturnType<typeof row>[]) =>
+      houseSchema.safeParse({ ...base, contacts }).success
+    expect(ok([row('', '')])).toBe(true)
+    expect(ok([row('สมชาย', '0812345678')])).toBe(true)
+    expect(ok([row('', '0812345678')])).toBe(false)
   })
+})
+
+describe('access', () => {
   it('omits empty optional vehicle fields', () => {
     expect(
       toVehiclePayload({
-        license_plate: ' กข 1234 ',
+        plate_prefix: ' กข ',
+        plate_number: '1234 ',
         province: '',
         brand: 'Toyota',
         color: '',
@@ -95,11 +105,31 @@ describe('residents', () => {
       color: undefined,
     })
   })
+  it('splits stored plates and validates category + number', () => {
+    expect(formatPlate('1กข1234')).toBe('1กข 1234')
+    expect(formatPlate('701234')).toBe('70-1234')
+    expect(formatPlate('ABC')).toBe('ABC')
+    const v = { province: '', brand: '', color: '' }
+    const ok = (plate_prefix: string, plate_number: string) =>
+      vehicleSchema.safeParse({ ...v, plate_prefix, plate_number }).success
+    expect(ok('1กข', '1234')).toBe(true)
+    expect(ok('จ', '12')).toBe(true)
+    expect(ok('70', '1234')).toBe(true)
+    expect(ok('70', '12')).toBe(false)
+    expect(ok('AB', '1234')).toBe(false)
+    expect(ok('1กข', '12345')).toBe(false)
+  })
+  it('generates QR codes in the format AAAAPI accepts', () => {
+    const a = randomQrCode()
+    expect(a).toMatch(/^[A-HJ-NP-Z2-9]{20}$/)
+    expect(randomQrCode()).not.toBe(a)
+  })
   it('requires a 4-8 digit PIN', () => {
     expect(
       credentialSchema.safeParse({
         cred_type: 'PIN',
         value: '12a4',
+        duration: '1d',
         valid_until: '',
       }).success
     ).toBe(false)
@@ -107,6 +137,7 @@ describe('residents', () => {
       credentialSchema.safeParse({
         cred_type: 'PIN',
         value: '1234',
+        duration: '1d',
         valid_until: '',
       }).success
     ).toBe(true)
@@ -114,13 +145,28 @@ describe('residents', () => {
       credentialSchema.safeParse({
         cred_type: 'RFID',
         value: 'A1B2',
+        duration: '1d',
         valid_until: '',
       }).success
     ).toBe(true)
+  })
+  it('sends duration, or valid_until for a custom date', () => {
+    const v = { cred_type: 'RFID' as const, value: 'A1', valid_until: '' }
+    expect(toCredentialPayload({ ...v, duration: 'forever' })).toEqual({
+      cred_type: 'RFID',
+      value: 'A1',
+      duration: 'forever',
+    })
     expect(
-      toCredentialPayload({ cred_type: 'RFID', value: 'A1', valid_until: '' })
-        .valid_until
-    ).toBeUndefined()
+      toCredentialPayload({
+        ...v,
+        duration: 'custom',
+        valid_until: '2030-01-01',
+      })
+    ).toHaveProperty('valid_until')
+    expect(
+      credentialSchema.safeParse({ ...v, duration: 'custom' }).success
+    ).toBe(false)
   })
 })
 

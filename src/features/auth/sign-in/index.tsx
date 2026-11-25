@@ -1,4 +1,5 @@
 import { useSearch } from '@tanstack/react-router'
+import { useT } from '@/lib/i18n'
 import {
   Card,
   CardContent,
@@ -10,6 +11,7 @@ import { AuthLayout } from '../auth-layout'
 import { UserAuthForm } from './components/user-auth-form'
 
 export function SignIn() {
+  const t = useT()
   const { redirect } = useSearch({ from: '/(auth)/sign-in' })
 
   return (
@@ -17,11 +19,9 @@ export function SignIn() {
       <Card className='w-full max-w-sm gap-4'>
         <CardHeader>
           <CardTitle className='text-lg tracking-tight'>
-            Admin sign in
+            {t('auth.title')}
           </CardTitle>
-          <CardDescription>
-            Sign in with your administrator account.
-          </CardDescription>
+          <CardDescription>{t('auth.desc')}</CardDescription>
         </CardHeader>
         <CardContent>
           <UserAuthForm redirectTo={redirect} />

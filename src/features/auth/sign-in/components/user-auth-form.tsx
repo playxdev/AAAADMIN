@@ -7,6 +7,7 @@ import { Loader2, LogIn } from 'lucide-react'
 import { toast } from 'sonner'
 import { tokenClaims, useAuthStore } from '@/stores/auth-store'
 import { api, apiErrorMessage } from '@/lib/api'
+import { k, t as tNow, useT } from '@/lib/i18n'
 import type { AdminLoginRequest, AdminLoginResponse } from '@/lib/types'
 import { cn, safeRedirect } from '@/lib/utils'
 import { Button } from '@/components/ui/button'
@@ -22,8 +23,8 @@ import { Input } from '@/components/ui/input'
 import { PasswordInput } from '@/components/password-input'
 
 const formSchema = z.object({
-  admin_name: z.string().trim().min(1, 'Please enter your admin name.'),
-  password: z.string().min(1, 'Please enter your password.'),
+  admin_name: z.string().trim().min(1, k('v.adminName')),
+  password: z.string().min(1, k('v.password')),
 })
 
 interface UserAuthFormProps extends React.HTMLAttributes<HTMLFormElement> {
@@ -35,6 +36,7 @@ export function UserAuthForm({
   redirectTo,
   ...props
 }: UserAuthFormProps) {
+  const t = useT()
   const [isLoading, setIsLoading] = useState(false)
   const navigate = useNavigate()
   const { auth } = useAuthStore()
@@ -55,10 +57,10 @@ export function UserAuthForm({
         fullName: data.admin_name,
         projectId: claims.pid,
       })
-      toast.success(`Welcome back, ${data.admin_name}!`)
+      toast.success(tNow('auth.welcome', { name: data.admin_name }))
       navigate({ to: safeRedirect(redirectTo), replace: true })
     } catch (error) {
-      toast.error(apiErrorMessage(error, 'Login failed'))
+      toast.error(apiErrorMessage(error, tNow('err.login')))
     } finally {
       setIsLoading(false)
     }
@@ -76,10 +78,10 @@ export function UserAuthForm({
           name='admin_name'
           render={({ field }) => (
             <FormItem>
-              <FormLabel>Admin Name</FormLabel>
+              <FormLabel>{t('auth.name')}</FormLabel>
               <FormControl>
                 <Input
-                  placeholder='Admin username'
+                  placeholder={t('auth.namePh')}
                   autoComplete='username'
                   {...field}
                 />
@@ -93,7 +95,7 @@ export function UserAuthForm({
           name='password'
           render={({ field }) => (
             <FormItem>
-              <FormLabel>Password</FormLabel>
+              <FormLabel>{t('auth.password')}</FormLabel>
               <FormControl>
                 <PasswordInput
                   placeholder='********'
@@ -107,7 +109,7 @@ export function UserAuthForm({
         />
         <Button className='mt-2' disabled={isLoading}>
           {isLoading ? <Loader2 className='animate-spin' /> : <LogIn />}
-          Sign in
+          {t('auth.signIn')}
         </Button>
       </form>
     </Form>

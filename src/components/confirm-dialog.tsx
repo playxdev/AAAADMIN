@@ -1,3 +1,5 @@
+import { TriangleAlert } from 'lucide-react'
+import { useT } from '@/lib/i18n'
 import { cn } from '@/lib/utils'
 import {
   AlertDialog,
@@ -19,6 +21,8 @@ type ConfirmDialogProps = {
   cancelBtnText?: string
   confirmText?: React.ReactNode
   destructive?: boolean
+  /** Amber: reversible or cautionary (disable, sign out). Use destructive only for delete/destroy. */
+  warning?: boolean
   isLoading?: boolean
   className?: string
   children?: React.ReactNode
@@ -28,6 +32,7 @@ type ConfirmDialogProps = {
 )
 
 export function ConfirmDialog(props: ConfirmDialogProps) {
+  const t = useT()
   const {
     title,
     desc,
@@ -36,6 +41,7 @@ export function ConfirmDialog(props: ConfirmDialogProps) {
     confirmText,
     cancelBtnText,
     destructive,
+    warning,
     isLoading,
     disabled = false,
     form,
@@ -46,7 +52,17 @@ export function ConfirmDialog(props: ConfirmDialogProps) {
     <AlertDialog {...actions}>
       <AlertDialogContent className={cn(className && className)}>
         <AlertDialogHeader className='text-start'>
-          <AlertDialogTitle>{title}</AlertDialogTitle>
+          <AlertDialogTitle className='flex items-center gap-2'>
+            {(destructive || warning) && (
+              <TriangleAlert
+                className={cn(
+                  'size-5',
+                  destructive ? 'text-destructive' : 'text-warning'
+                )}
+              />
+            )}
+            {title}
+          </AlertDialogTitle>
           <AlertDialogDescription asChild>
             <div>{desc}</div>
           </AlertDialogDescription>
@@ -54,16 +70,18 @@ export function ConfirmDialog(props: ConfirmDialogProps) {
         {children}
         <AlertDialogFooter>
           <AlertDialogCancel disabled={isLoading}>
-            {cancelBtnText ?? 'Cancel'}
+            {cancelBtnText ?? t('common.cancel')}
           </AlertDialogCancel>
           <Button
             type={form ? 'submit' : 'button'}
             form={form}
             onClick={handleConfirm}
-            variant={destructive ? 'destructive' : 'default'}
+            variant={
+              destructive ? 'destructive' : warning ? 'warning' : 'default'
+            }
             disabled={disabled || isLoading}
           >
-            {confirmText ?? 'Continue'}
+            {confirmText ?? t('common.continue')}
           </Button>
         </AlertDialogFooter>
       </AlertDialogContent>

@@ -1,6 +1,7 @@
 import { DropdownMenuTrigger } from '@radix-ui/react-dropdown-menu'
 import { MixerHorizontalIcon } from '@radix-ui/react-icons'
 import { type Table } from '@tanstack/react-table'
+import { type TKey, useT } from '@/lib/i18n'
 import { Button } from '@/components/ui/button'
 import {
   DropdownMenu,
@@ -17,6 +18,7 @@ type DataTableViewOptionsProps<TData> = {
 export function DataTableViewOptions<TData>({
   table,
 }: DataTableViewOptionsProps<TData>) {
+  const t = useT()
   return (
     <DropdownMenu modal={false}>
       <DropdownMenuTrigger asChild>
@@ -26,11 +28,11 @@ export function DataTableViewOptions<TData>({
           className='ms-auto hidden h-8 lg:flex'
         >
           <MixerHorizontalIcon className='size-4' />
-          View
+          {t('table.view')}
         </Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent align='end' className='w-37.5'>
-        <DropdownMenuLabel>Toggle columns</DropdownMenuLabel>
+        <DropdownMenuLabel>{t('table.toggleColumns')}</DropdownMenuLabel>
         <DropdownMenuSeparator />
         {table
           .getAllColumns()
@@ -42,11 +44,11 @@ export function DataTableViewOptions<TData>({
             return (
               <DropdownMenuCheckboxItem
                 key={column.id}
-                className='capitalize'
                 checked={column.getIsVisible()}
                 onCheckedChange={(value) => column.toggleVisibility(!!value)}
               >
-                {column.id}
+                {/* Column ids double as col.* keys; unknown ids fall back to the id. */}
+                {t(`col.${column.id}` as TKey)}
               </DropdownMenuCheckboxItem>
             )
           })}

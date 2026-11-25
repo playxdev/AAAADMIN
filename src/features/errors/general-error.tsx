@@ -1,4 +1,5 @@
 import { useNavigate, useRouter } from '@tanstack/react-router'
+import { useT } from '@/lib/i18n'
 import { cn } from '@/lib/utils'
 import { Button } from '@/components/ui/button'
 
@@ -10,6 +11,7 @@ export function GeneralError({
   className,
   minimal = false,
 }: GeneralErrorProps) {
+  const t = useT()
   const navigate = useNavigate()
   const { history } = useRouter()
   return (
@@ -18,16 +20,16 @@ export function GeneralError({
         {!minimal && (
           <h1 className='text-[7rem] leading-tight font-bold'>500</h1>
         )}
-        <span className='font-medium'>Oops! Something went wrong {`:')`}</span>
-        <p className='text-center text-muted-foreground'>
-          We apologize for the inconvenience. <br /> Please try again later.
-        </p>
+        <span className='font-medium'>{t('e500.title')}</span>
+        <p className='text-center text-muted-foreground'>{t('e500.desc')}</p>
         {!minimal && (
           <div className='mt-6 flex gap-4'>
             <Button variant='outline' onClick={() => history.go(-1)}>
-              Go Back
+              {t('common.goBack')}
             </Button>
-            <Button onClick={() => navigate({ to: '/' })}>Back to Home</Button>
+            <Button onClick={() => navigate({ to: '/' })}>
+              {t('common.backHome')}
+            </Button>
           </div>
         )}
       </div>

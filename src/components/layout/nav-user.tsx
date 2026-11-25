@@ -1,5 +1,6 @@
 import { ChevronsUpDown, LogOut } from 'lucide-react'
 import { useAuthStore } from '@/stores/auth-store'
+import { useT } from '@/lib/i18n'
 import { getDisplayNameInitials as initials } from '@/lib/utils'
 import useDialogState from '@/hooks/use-dialog-state'
 import { Avatar, AvatarFallback } from '@/components/ui/avatar'
@@ -21,6 +22,7 @@ import { SignOutDialog } from '@/components/sign-out-dialog'
 
 export function NavUser() {
   const { isMobile } = useSidebar()
+  const t = useT()
   const [open, setOpen] = useDialogState()
   const user = useAuthStore((s) => s.auth.user)
   const name = user?.fullName ?? 'Admin'
@@ -33,7 +35,7 @@ export function NavUser() {
       <div className='grid flex-1 text-start text-sm leading-tight'>
         <span className='truncate font-semibold'>{name}</span>
         <span className='truncate text-xs'>
-          {user && `Project ${user.projectId}`}
+          {user && t('account.project', { id: user.projectId })}
         </span>
       </div>
     </>
@@ -66,11 +68,11 @@ export function NavUser() {
               </DropdownMenuLabel>
               <DropdownMenuSeparator />
               <DropdownMenuItem
-                variant='destructive'
+                className='text-warning focus:text-warning [&_svg]:text-warning!'
                 onClick={() => setOpen(true)}
               >
                 <LogOut />
-                Sign out
+                {t('account.signOut')}
               </DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>

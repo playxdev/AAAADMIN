@@ -2,25 +2,30 @@
 
 export type PaymentStatus = 'NORMAL' | 'OVERDUE' | 'OVERDUE_SEVERE'
 
+export type Occupancy = 'OCCUPIED' | 'VACANT'
+export type ContactRole = 'OWNER' | 'RESIDENT' | 'TENANT'
+
+/** House contact (tb_user): owner / resident / tenant, optionally linked to LINE. */
+export interface Contact {
+  user_id: string
+  house_id: string
+  full_name: string
+  phone_number: string | null
+  role: ContactRole
+  line_linked: number
+}
+
 export interface House {
   house_id: string
   house_number: string
   house_code: string | null
   zone_or_soi: string | null
   payment_status: PaymentStatus
+  occupancy_status: Occupancy
   is_active: number
   update_date: string
-}
-
-export interface Resident {
-  user_id: string
-  house_id: string | null
-  full_name: string
-  phone_number: string | null
-  line_id: string | null
-  role: string
-  is_active: number
-  update_date: string
+  /** Active contacts, owner first (= main contact). */
+  contacts: Contact[]
 }
 
 export interface Vehicle {
@@ -43,7 +48,8 @@ export interface Credential {
   id_status: string
 }
 
-export interface ResidentDetail extends Resident {
+/** Access methods belong to the house, not to a person. */
+export interface HouseDetail extends House {
   vehicles: Vehicle[]
   credentials: Credential[]
 }

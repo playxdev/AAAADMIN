@@ -62,7 +62,7 @@ export function SelectField<T extends FieldValues>({
   items,
   placeholder,
 }: BaseProps<T> & {
-  items: { label: string; value: string; disabled?: boolean }[]
+  items: { label: React.ReactNode; value: string; disabled?: boolean }[]
   placeholder?: string
 }) {
   return (

@@ -16,6 +16,10 @@
   --accent: #eff6ff;
   --accent-foreground: #1e40af;
   --destructive: #ef4444;
+  /* Action tones: success = add/create, warning = reversible/caution, info = FYI/acknowledge. Red (destructive) only for delete/destroy. */
+  --success: #16a34a;
+  --warning: #f59e0b;
+  --info: #0ea5e9;
   --border: #e2e8f0;
   --input: #e2e8f0;
   --ring: #3b82f6;
@@ -51,6 +55,9 @@
   --accent: #1e293b;
   --accent-foreground: #e2e8f0;
   --destructive: #f87171;
+  --success: #22c55e;
+  --warning: #fbbf24;
+  --info: #38bdf8;
   --border: #1e293b;
   --input: #1e293b;
   --ring: #60a5fa;
@@ -85,6 +92,9 @@
   --color-accent: var(--accent);
   --color-accent-foreground: var(--accent-foreground);
   --color-destructive: var(--destructive);
+  --color-success: var(--success);
+  --color-warning: var(--warning);
+  --color-info: var(--info);
   --color-border: var(--border);
   --color-input: var(--input);
   --color-ring: var(--ring);

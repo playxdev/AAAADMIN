@@ -1,16 +1,17 @@
 import {
   AlertTriangle,
   Home,
+  LayoutDashboard,
   type LucideIcon,
   UserCheck,
   Users,
 } from 'lucide-react'
 import { apiErrorMessage } from '@/lib/api'
+import { useT } from '@/lib/i18n'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Skeleton } from '@/components/ui/skeleton'
 import { Page } from '@/components/layout/page'
 import { useHouses } from '@/features/houses/data'
-import { useResidents } from '@/features/residents/data'
 import { useVisitors } from '@/features/visitors/data'
 
 function Stat({
@@ -26,6 +27,7 @@ function Stat({
   isPending: boolean
   error: unknown
 }) {
+  const t = useT()
   return (
     <Card>
       <CardHeader className='flex flex-row items-center justify-between space-y-0 pb-2'>
@@ -37,7 +39,7 @@ function Stat({
           <Skeleton className='h-8 w-16' />
         ) : error ? (
           <p className='text-sm text-destructive'>
-            {apiErrorMessage(error, 'Failed to load')}
+            {apiErrorMessage(error, t('err.load'))}
           </p>
         ) : (
           <div className='text-2xl font-bold'>{value}</div>
@@ -48,31 +50,34 @@ function Stat({
 }
 
 export function Dashboard() {
+  const t = useT()
   // Same query keys as the list pages, so the dashboard and pages share the cache.
   const houses = useHouses()
-  const residents = useResidents()
   const visitors = useVisitors(true)
   const activeHouses = houses.data?.filter((h) => h.is_active)
 
   return (
-    <Page title='Dashboard'>
+    <Page title={t('nav.dashboard')} icon={LayoutDashboard}>
       <div className='grid gap-4 sm:grid-cols-2 lg:grid-cols-4'>
         <Stat
-          title='Houses'
+          title={t('nav.houses')}
           icon={Home}
           value={activeHouses?.length}
           isPending={houses.isPending}
           error={houses.error}
         />
         <Stat
-          title='Residents'
+          title={t('dash.occupied')}
           icon={Users}
-          value={residents.data?.filter((r) => r.is_active).length}
-          isPending={residents.isPending}
-          error={residents.error}
+          value={
+            activeHouses?.filter((h) => h.occupancy_status === 'OCCUPIED')
+              .length
+          }
+          isPending={houses.isPending}
+          error={houses.error}
         />
         <Stat
-          title='Overdue houses'
+          title={t('dash.overdue')}
           icon={AlertTriangle}
           value={
             activeHouses?.filter((h) => h.payment_status !== 'NORMAL').length
@@ -81,7 +86,7 @@ export function Dashboard() {
           error={houses.error}
         />
         <Stat
-          title='Valid visitors'
+          title={t('dash.validVisitors')}
           icon={UserCheck}
           value={visitors.data?.filter((v) => v.is_valid_now).length}
           isPending={visitors.isPending}

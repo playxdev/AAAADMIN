@@ -1,5 +1,6 @@
 import { type ClassValue, clsx } from 'clsx'
 import { twMerge } from 'tailwind-merge'
+import { dateLocale } from './i18n'
 
 export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs))
@@ -79,7 +80,9 @@ export function safeRedirect(target?: string) {
 
 /** DB timestamps are UTC "YYYY-MM-DD HH:MM:SS"; show them in local time. */
 export function fmtUtc(s: string | null): string {
-  return s ? new Date(s.replace(' ', 'T') + 'Z').toLocaleString() : '-'
+  return s
+    ? new Date(s.replace(' ', 'T') + 'Z').toLocaleString(dateLocale())
+    : '-'
 }
 
 /** Local date input (yyyy-mm-dd) -> end of that local day as SQLite UTC "YYYY-MM-DD HH:MM:SS". */

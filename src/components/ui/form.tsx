@@ -10,6 +10,7 @@ import {
 } from 'react-hook-form'
 import * as LabelPrimitive from '@radix-ui/react-label'
 import { Slot } from '@radix-ui/react-slot'
+import { type TKey, useT } from '@/lib/i18n'
 import { cn } from '@/lib/utils'
 import { Label } from '@/components/ui/label'
 
@@ -133,8 +134,10 @@ function FormDescription({ className, ...props }: React.ComponentProps<'p'>) {
 }
 
 function FormMessage({ className, ...props }: React.ComponentProps<'p'>) {
+  const t = useT()
   const { error, formMessageId } = useFormField()
-  const body = error ? String(error?.message ?? '') : props.children
+  // Schema messages are translation keys (see k() in lib/i18n).
+  const body = error ? t(String(error?.message ?? '') as TKey) : props.children
 
   if (!body) {
     return null
