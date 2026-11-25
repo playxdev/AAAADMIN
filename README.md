@@ -1,4 +1,4 @@
-# AAAADMIN — Axis Access Auto Admin Panel v2.1.0
+# AAAADMIN — Axis Access Auto Admin Panel v2.2.0
 
 Administrative dashboard for the AAA intelligent residential access management system,
 talking to **AAAAPI** `/api/v1/admin/*` (Cloudflare Worker).
@@ -11,20 +11,25 @@ started from [satnaing/shadcn-admin](https://github.com/satnaing/shadcn-admin)
 ## Features
 
 - **Admin login**: `POST /api/v1/admin/login` returns an admin JWT valid for 1 hour. A route guard protects every page, and the post-login redirect only goes to same-app paths.
-- **Dashboard** shows active houses, active residents, overdue houses and valid visitors.
-- **Houses**:
+- **Dashboard** shows active houses, occupied houses, overdue houses and valid visitors.
+- **Houses** (access belongs to the house, not to a person):
   - house number and `house_code`, the Guest Code prefix (1–6 digits, validated like the API)
-  - `payment_status`, editable on update only
-  - enable / disable
-- **Residents**:
-  - create, edit, disable and re-activate
-  - **Access** dialog: vehicles (ANPR; plates are normalized by the API), RFID / QR / PIN credentials (a PIN must be 4–8 digits, with optional valid-until), and a LINE link code shown once
+  - `payment_status` (editable on update only), occupancy (`OCCUPIED` / `VACANT`: vacant turns every access method of the house off), enable / disable
+  - contacts: name, phone and role (owner / resident / tenant), one row by default, [+] to add more; the table shows the main contact (owner first) and the search box finds any contact's name or phone
+  - **Access** dialog per house:
+    - vehicles: plate as category + number (`1กข` + `1234`, trucks `70` + 4 digits) + province (Thai list), brand (Thai / English list), colour dropdown
+    - credentials: RFID, PIN (🎲 random 4 digits), QR (20-char code generated in the browser, slot-machine reveal, copy button); duration `1d`…`1y` / forever / custom date (RFID defaults to forever, PIN / QR to 1 day)
+    - LINE link code per contact, shown once with a copy button
+    - a vacant house shows a warning and disables every add form
+- **Removed:** the Residents page (contacts now live on the house).
 - **Visitors**:
   - issue a visitor pass for a house that has a `house_code`, or for the common area
   - set a duration and optionally issue a Guest Code, which is **shown once** and must be closed with Done
   - revoke a pass, and filter the list to valid passes only
 - **Data tables** support search, sorting, column visibility and pagination. Dialogs, selects and menus are accessible (Radix).
 - **Light/Dark/System theme** uses the AAA Modern Minimal Blue tokens. Fonts are Google Sans with a Noto Sans Thai fallback.
+- **Thai / English**: language switch in the header and on sign-in, saved in the `lang` cookie (first visit follows the browser). Strings live in `src/locales/{en,th}.ts`; `th` must define every `en` key (checked by `tsc`). Thai dates use the Buddhist year.
+- **Action colours**: green = add / create, amber = caution / reversible (disable, sign out), red = delete / destroy, sky = info / acknowledge.
 
 ## Tech Stack
 
@@ -85,6 +90,12 @@ pnpm test         # needs: pnpm exec playwright install chromium
 - The session (Bearer JWT + admin profile) is stored in a `SameSite=Strict` cookie, with `Secure` on HTTPS. JavaScript can read this cookie, so it can be stolen through XSS. Move to an HttpOnly cookie issued by the API once the backend supports it (App Template Standard §2).
 
 ## Changelog
+
+### v2.2.0
+- Access belongs to the house: Houses page gets contacts (owner / resident / tenant), occupancy (vacant = everything off) and the Access dialog; Residents page removed (AAAAPI `/houses/:id/*`, `/contacts/*`, migration `0004`)
+- Thai / English i18n with typed keys and a language switch
+- Access dialog: plate category + number + province, province / brand lists, colour dropdown, in-browser QR code with reveal animation and copy, random PIN, duration select
+- Action colours (success / warning / info button variants, coloured toasts), icons on page / section / dialog titles, full-width tables, one sidebar toggle
 
 ### v2.1.0
 - Port v2 (shadcn/ui + TanStack) to the AAAAPI admin API from v1.3.0 (`/api/v1/admin/*`, `{ error, field }` errors, `access_token` login)
