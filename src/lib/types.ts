@@ -95,6 +95,14 @@ export interface AccessLog {
   gate_name: string | null
   cred_type: string | null
   credential_label: string | null
+  /** House linked to the event (known even when the result is NO). */
+  house_id: string | null
+  house_code: string | null
+  has_image: number
+  has_plate_image: number
+  /** Only with ?signed=1: links valid for 7 days (CSV). */
+  image_link?: string
+  plate_image_link?: string
 }
 
 export interface VisitorCreated {

@@ -28,6 +28,7 @@ import { DataTable } from '@/components/data-table'
 import { Page } from '@/components/layout/page'
 import { formatPlate } from '@/features/houses/access-data'
 import { useAccessLogColumns, useReasonText } from './access-log-columns'
+import { EventImageDialog } from './image-viewer'
 
 // shortcut: one request, newest 1,000 rows; add server paging / export when a range holds more.
 const MAX_ROWS = 1000
@@ -40,6 +41,23 @@ const localDate = (d: Date) =>
 // Local day bounds -> UTC ISO (the API stores UTC).
 const dayStart = (date: string) => new Date(`${date}T00:00:00`).toISOString()
 const dayEnd = (date: string) => new Date(`${date}T23:59:59`).toISOString()
+
+type Filters = { from: string; to: string; decision: string; method: string }
+
+function fetchLogs(f: Filters, signed: boolean) {
+  return api
+    .get<{ logs: AccessLog[] }>('/access-logs', {
+      params: {
+        limit: MAX_ROWS,
+        from: dayStart(f.from),
+        to: dayEnd(f.to),
+        decision: f.decision === ALL ? undefined : f.decision,
+        method: f.method === ALL ? undefined : f.method,
+        signed: signed ? 1 : undefined,
+      },
+    })
+    .then((r) => r.data.logs)
+}
 
 function Stat({
   title,
@@ -75,7 +93,8 @@ function Stat({
 export function Reports() {
   const t = useT()
   const reason = useReasonText()
-  const columns = useAccessLogColumns()
+  const [viewing, setViewing] = useState<AccessLog>()
+  const columns = useAccessLogColumns(setViewing)
   // Default range: the last 7 days (lazy init keeps Date.now() out of render).
   const [today] = useState(() => localDate(new Date()))
   const [from, setFrom] = useState(() =>
@@ -84,27 +103,19 @@ export function Reports() {
   const [to, setTo] = useState(today)
   const [decision, setDecision] = useState(ALL)
   const [method, setMethod] = useState(ALL)
+  const filters = { from, to, decision, method }
 
   const logs = useQuery({
-    queryKey: ['access-logs', 'report', from, to, decision, method],
-    queryFn: () =>
-      api
-        .get<{ logs: AccessLog[] }>('/access-logs', {
-          params: {
-            limit: MAX_ROWS,
-            from: dayStart(from),
-            to: dayEnd(to),
-            decision: decision === ALL ? undefined : decision,
-            method: method === ALL ? undefined : method,
-          },
-        })
-        .then((r) => r.data.logs),
+    queryKey: ['access-logs', 'report', filters],
+    queryFn: () => fetchLogs(filters, false),
     enabled: !!from && !!to && from <= to,
   })
   const rows = useMemo(() => logs.data ?? [], [logs.data])
   const allowed = rows.filter((l) => l.decision === 'YES').length
 
-  const exportCsv = () => {
+  // CSV carries picture links valid for 7 days (they open without signing in).
+  const exportCsv = async () => {
+    const signedRows = await fetchLogs(filters, true)
     const header = [
       t('log.time'),
       t('log.direction'),
@@ -115,8 +126,10 @@ export function Reports() {
       t('log.gate'),
       t('log.result'),
       t('log.reason'),
+      t('img.scene'),
+      t('img.plate'),
     ]
-    const body = rows.map((l) => [
+    const body = signedRows.map((l) => [
       fmtUtc(l.timestamp),
       t(l.access_type === 'EXIT' ? 'log.exit' : 'log.entry'),
       l.method ?? '',
@@ -126,6 +139,8 @@ export function Reports() {
       l.gate_name ?? '',
       l.decision ?? '',
       reason(l.reason_code),
+      l.image_link ?? '',
+      l.plate_image_link ?? '',
     ])
     const csv = [header, ...body]
       .map((r) => r.map((c) => `"${String(c).replace(/"/g, '""')}"`).join(','))
@@ -241,6 +256,7 @@ export function Reports() {
           {t('rep.capped', { n: MAX_ROWS })}
         </p>
       )}
+      <EventImageDialog log={viewing} onClose={() => setViewing(undefined)} />
       <DataTable
         columns={columns}
         data={rows}

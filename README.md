@@ -1,4 +1,4 @@
-# AAAADMIN — Axis Access Auto Admin Panel v2.5.1
+# AAAADMIN — Axis Access Auto Admin Panel v2.6.0
 
 Administrative dashboard for the AAA intelligent residential access management system,
 talking to **AAAAPI** `/api/v1/admin/*` (Cloudflare Worker).
@@ -90,6 +90,11 @@ pnpm test         # needs: pnpm exec playwright install chromium
 - The session (Bearer JWT + admin profile) is stored in a `SameSite=Strict` cookie, with `Secure` on HTTPS. JavaScript can read this cookie, so it can be stolen through XSS. Move to an HttpOnly cookie issued by the API once the backend supports it (App Template Standard §2).
 
 ## Changelog
+
+### v2.6.0
+- Camera pictures per gate event: 📷 button in Reports and the Dashboard opens a viewer (scene / plate close-up), loaded with the admin token
+- Report CSV adds picture links valid for 7 days (open without signing in); house column falls back to the linked house for denied events
+- Needs AAAAPI migration `0009` and the R2 bucket `aaa-images`
 
 ### v2.5.1
 - Dashboard: latest gate activity (20 rows, refresh every 15 s); Reports page: date range / result / method filters, summary, CSV export (Excel-ready)

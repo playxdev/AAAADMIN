@@ -406,4 +406,12 @@ export const th: Record<keyof typeof en, string> = {
   'rep.capped':
     'แสดงเฉพาะ {n} รายการล่าสุด: เลือกช่วงวันที่ให้แคบลงเพื่อดูทั้งหมด',
   'log.reason': 'เหตุผล',
+
+  // camera pictures
+  'img.title': 'รูปจากกล้อง',
+  'img.scene': 'รูปเต็ม',
+  'img.plate': 'รูปป้ายทะเบียน',
+  'img.missing': 'ไม่มีรูป',
+  'api.IMAGE_EXPIRED': 'รูปถูกลบแล้ว (เก็บ 90 วัน)',
+  'api.NO_IMAGE': 'event นี้ไม่มีรูป',
 }

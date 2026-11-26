@@ -1,3 +1,4 @@
+import { useState } from 'react'
 import { useQuery } from '@tanstack/react-query'
 import { History } from 'lucide-react'
 import { api, apiErrorMessage } from '@/lib/api'
@@ -5,6 +6,7 @@ import { useT } from '@/lib/i18n'
 import type { AccessLog } from '@/lib/types'
 import { DataTable } from '@/components/data-table'
 import { useAccessLogColumns } from '@/features/reports/access-log-columns'
+import { EventImageDialog } from '@/features/reports/image-viewer'
 
 const LIMIT = 20
 // The gate keeps writing logs; refresh while the dashboard is open.
@@ -24,7 +26,8 @@ export function AccessLogCard() {
     refetchInterval: REFRESH_MS,
   })
 
-  const columns = useAccessLogColumns()
+  const [viewing, setViewing] = useState<AccessLog>()
+  const columns = useAccessLogColumns(setViewing)
 
   return (
     <section className='space-y-3'>
@@ -38,6 +41,7 @@ export function AccessLogCard() {
         isLoading={logs.isPending}
         error={logs.isError ? apiErrorMessage(logs.error, t('err.load')) : null}
       />
+      <EventImageDialog log={viewing} onClose={() => setViewing(undefined)} />
     </section>
   )
 }

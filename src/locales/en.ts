@@ -408,4 +408,12 @@ export const en = {
   'rep.capped':
     'Showing the latest {n} events only: narrow the date range to see all.',
   'log.reason': 'Reason',
+
+  // camera pictures
+  'img.title': 'Camera pictures',
+  'img.scene': 'Scene',
+  'img.plate': 'Plate close-up',
+  'img.missing': 'No picture',
+  'api.IMAGE_EXPIRED': 'Picture deleted (kept 90 days)',
+  'api.NO_IMAGE': 'No picture for this event',
 }
